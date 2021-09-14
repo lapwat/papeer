@@ -26,7 +26,7 @@ var listCmd = &cobra.Command{
 		classesLinks := map[string][]map[string]string{}
 		classesCount := map[string]int{}
 		classMax := ""
-		
+
 		c.OnHTML(selector, func(e *colly.HTMLElement) {
 			href := e.Attr("href")
 			text := strings.TrimSpace(e.Text)

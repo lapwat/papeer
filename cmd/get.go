@@ -12,7 +12,7 @@ import (
 	epub "github.com/bmaupin/go-epub"
 	cobra "github.com/spf13/cobra"
 
-	"papeer/book"
+	"github.com/papeer/book"
 )
 
 var quiet, stdout, recursive, include bool

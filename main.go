@@ -1,7 +1,7 @@
 package main
 
 import (
-	"papeer/cmd"
+	"github.com/lapwat/papeer/cmd"
 )
 
 func main() {
