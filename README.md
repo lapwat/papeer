@@ -54,7 +54,7 @@ Execute this command in your current shell, or add it to your `.bashrc`.
 
 Type `papeer completion bash -h` for more information.
 
-You can replace bash by your own shell (zsh, fish, powershell).
+You can replace `bash` by your own shell (zsh, fish or powershell).
 
 # Dependencies
 
