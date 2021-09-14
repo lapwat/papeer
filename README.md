@@ -16,7 +16,7 @@ go install github.com/lapwat/papeer
 
 # Usage
 
-```sh
+```txt
 Browse the web in the eink era
 
 Usage:
@@ -49,8 +49,12 @@ Use "papeer [command] --help" for more information about a command.
 Execute this command in your current shell, or add it to your `.bashrc`.
 
 ```sh
-. <(papeer completion [bash|fish|powershell|zsh])
+. <(papeer completion bash)
 ```
+
+Type `papeer completion bash -h` for more information.
+
+You can replace bash by your own shell (zsh, fish, powershell).
 
 # Dependencies
 
