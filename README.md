@@ -1,5 +1,15 @@
 # Installation
 
+## From binary
+
+```sh
+curl https://github.com/lapwat/papeer/releases/download/v0.0.1/papeer-v0.0.1 > papeer
+chmod +x papeer
+mv papeer /usr/local/bin 
+```
+
+## From source
+
 ```sh
 go install github.com/lapwat/papeer
 ```
@@ -41,3 +51,12 @@ Execute this command in your current shell, or add it to your `.bashrc`.
 ```sh
 . <(papeer completion [bash|fish|powershell|zsh])
 ```
+
+# Dependencies
+
+- `cobra` command line interface
+- `go-readability` extract content from HTML
+- `html-to-markdown` convert HTML to Markdown
+- `go-epub` convert HTML to EPUB
+- `colly` query HTML trees
+- `uiprogress` display progress bars
