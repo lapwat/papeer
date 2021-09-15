@@ -19,7 +19,7 @@ Ebook saved to "Hacker_News.epub"
 ## From binary
 
 ```sh
-curl https://github.com/lapwat/papeer/releases/download/v0.0.1/papeer-v0.0.1 > papeer
+curl https://github.com/lapwat/papeer/releases/download/v0.0.2/papeer-v0.0.2 > papeer
 chmod +x papeer
 sudo mv papeer /usr/local/bin
 ```
