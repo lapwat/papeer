@@ -1,3 +1,19 @@
+```
+❯ papeer get --format epub --recursive --delay 500 --limit 10 https://news.ycombinator.com/
+   6s [===============================================>--------------------]  70% Status: 7 out of 10 chapters
+   0s [====================================================================] 100% 1. Three ex-US intelligence officers admit hacking for UAE
+   0s [====================================================================] 100% 2. Show HN: Time Travel Debugger
+   0s [====================================================================] 100% 3. How much faster is Java 17?
+   0s [====================================================================] 100% 4. The First Webcam Was Invented to Keep an Eye on a Coffee Pot
+   0s [====================================================================] 100% 5. Nikon's 2021 Photomicrography Competition Winners
+   0s [====================================================================] 100% 6. HTTP Status 418 – I'm a teapot
+   0s [====================================================================] 100% 7. H3: Hexagonal hierarchical geospatial indexing system
+  --- [--------------------------------------------------------------------]   0% 8. Automatic cipher suite ordering in Go’s crypto/tls
+  --- [--------------------------------------------------------------------]   0% 9. Find engineering roles at over 800 YC-funded startups
+  --- [--------------------------------------------------------------------]   0% 10. Futarchy: Robin Hanson on prediction markets
+Ebook saved to "Hacker_News.epub"
+```
+
 # Installation
 
 ## From binary
@@ -5,18 +21,25 @@
 ```sh
 curl https://github.com/lapwat/papeer/releases/download/v0.0.1/papeer-v0.0.1 > papeer
 chmod +x papeer
-mv papeer /usr/local/bin 
+sudo mv papeer /usr/local/bin
+```
+
+```sh
+# (optional) install kindlegen to export ebooks to MOBI format
+curl https://github.com/lapwat/papeer/raw/master/bin/kindlegen_linux_2.6_i386_v2_9.tar.gz > kindlegen
+chmod +x kindlegen
+sudo mv kindlegen /usr/local/bin
 ```
 
 ## From source
 
 ```sh
-go install github.com/lapwat/papeer
+go get -u github.com/lapwat/papeer
 ```
 
 # Usage
 
-```txt
+```
 Browse the web in the eink era
 
 Usage:

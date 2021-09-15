@@ -17,7 +17,7 @@ import (
 
 var quiet, stdout, recursive, include bool
 var format, output, selector string
-var delay int
+var limit, delay int
 
 var getCmd = &cobra.Command{
 	Use:   "get",
@@ -48,8 +48,20 @@ var getCmd = &cobra.Command{
 			}
 		}
 
-		if include && recursive == false {
+		if cmd.Flags().Changed("selector") && recursive == false {
+			return errors.New("cannot use selector option if not in recursive mode")
+		}
+
+		if cmd.Flags().Changed("include") && recursive == false {
 			return errors.New("cannot use include option if not in recursive mode")
+		}
+
+		if cmd.Flags().Changed("limit") && recursive == false {
+			return errors.New("cannot use limit option if not in recursive mode")
+		}
+
+		if cmd.Flags().Changed("delay") && recursive == false {
+			return errors.New("cannot use delay option if not in recursive mode")
 		}
 
 		return nil
@@ -59,7 +71,7 @@ var getCmd = &cobra.Command{
 		var b book.Book
 
 		if recursive {
-			b = book.NewBookFromURL(url, selector, include, delay)
+			b = book.NewBookFromURL(url, selector, include, limit, delay)
 		} else {
 			c := book.NewChapterFromURL(url)
 			b = book.New(c.Name(), c.Author())
@@ -104,7 +116,9 @@ var getCmd = &cobra.Command{
 				}
 			}
 
-			fmt.Printf("Markdown saved to \"%s\"\n", output)
+			if stdout == false {
+				fmt.Printf("Markdown saved to \"%s\"\n", output)
+			}
 		}
 
 		if format == "epub" {

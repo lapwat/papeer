@@ -3,6 +3,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log"
+	urllib "net/url"
 	"strings"
 
 	colly "github.com/gocolly/colly/v2"
@@ -19,20 +21,27 @@ var listCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		url := args[0]
-		c := colly.NewCollector()
+		base, err := urllib.Parse(args[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if selector == "" {
+			selector = "a"
+		}
 
 		// visit and count link classes
 		classesLinks := map[string][]map[string]string{}
 		classesCount := map[string]int{}
 		classMax := ""
 
+		c := colly.NewCollector()
 		c.OnHTML(selector, func(e *colly.HTMLElement) {
 			href := e.Attr("href")
 			text := strings.TrimSpace(e.Text)
 			class := e.Attr("class")
 
-			// if class != "" && text != "" {
+			if cmd.Flags().Changed("selector") || class != "" && text != "" {
 				classesLinks[class] = append(classesLinks[class], map[string]string{
 					"href": href,
 					"text": text,
@@ -43,12 +52,17 @@ var listCmd = &cobra.Command{
 				if classesCount[class] > classesCount[classMax] {
 					classMax = class
 				}
-			// }
+			}
 		})
 
-		c.Visit(url)
+		c.Visit(base.String())
 		for index, link := range classesLinks[classMax] {
-			fmt.Printf("Chapter %d: %s %s\n", index+1, link["text"], link["href"])
+			u, err := base.Parse(link["href"])
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Printf("Chapter %d: %s %s\n", index+1, link["text"], u.String())
 		}
 
 	},

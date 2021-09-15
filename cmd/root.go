@@ -28,9 +28,10 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&selector, "selector", "s", "", "table of content CSS selector")
 	rootCmd.PersistentFlags().BoolVarP(&recursive, "recursive", "r", false, "create one chapter per natigation item")
 	rootCmd.PersistentFlags().BoolVarP(&include, "include", "i", false, "include URL as first chapter, in resursive mode")
-	rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "do not show progress bars")
+	rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "do not show logs")
 	rootCmd.PersistentFlags().BoolVarP(&stdout, "stdout", "", false, "print to standard output")
-	rootCmd.PersistentFlags().IntVarP(&delay, "delay", "d", -1, "wait before downloading next chapter, in milliseconds")
+	rootCmd.PersistentFlags().IntVarP(&limit, "limit", "l", -1, "limit number of chapters, in recursive mode")
+	rootCmd.PersistentFlags().IntVarP(&delay, "delay", "d", -1, "time to wait before downloading next chapter, in milliseconds")
 
 	rootCmd.AddCommand(getCmd)
 	rootCmd.AddCommand(listCmd)

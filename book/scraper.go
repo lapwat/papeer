@@ -3,6 +3,7 @@ package book
 import (
 	"fmt"
 	"log"
+	"math"
 	urllib "net/url"
 	"strings"
 	"sync"
@@ -17,11 +18,11 @@ type scraper struct {
 	url string
 }
 
-func NewBookFromURL(url, selector string, include bool, delay int) Book {
+func NewBookFromURL(url, selector string, include bool, limit, delay int) Book {
 	home := NewChapterFromURL(url)
 	b := New(home.Name(), home.Author())
 
-	chapters := tableOfContent(url, selector, delay)
+	chapters := tableOfContent(url, selector, limit, delay)
 	if include {
 		b.AddChapter(home)
 	}
@@ -44,56 +45,45 @@ func NewChapterFromURL(url string) chapter {
 	return chapter{article.Title, article.Byline, article.Content}
 }
 
-func tableOfContent(url, selector string, delay int) []chapter {
+func tableOfContent(url, selector string, limit, delay int) []chapter {
 	c := colly.NewCollector()
 
 	classesLinks := map[string][]map[string]string{}
 	classesCount := map[string]int{}
 	classMax := ""
 
+	selectorSet := true
 	if selector == "" {
-		c.OnHTML("a", func(e *colly.HTMLElement) {
-			href := e.Attr("href")
-			text := strings.TrimSpace(e.Text)
-			class := e.Attr("class")
-
-			//if class != "" && text != "" {
-				classesLinks[class] = append(classesLinks[class], map[string]string{
-					"href": href,
-					"text": text,
-				})
-
-				classesCount[class]++
-
-				if classesCount[class] > classesCount[classMax] {
-					classMax = class
-				}
-			//}
-
-		})
-	} else {
-		c.OnHTML(selector, func(e *colly.HTMLElement) {
-			href := e.Attr("href")
-			text := strings.TrimSpace(e.Text)
-			class := e.Attr("class")
-
-			//if class != "" && text != "" {
-				classesLinks[class] = append(classesLinks[class], map[string]string{
-					"href": href,
-					"text": text,
-				})
-
-				classesCount[class]++
-
-				if classesCount[class] > classesCount[classMax] {
-					classMax = class
-				}
-			//}
-		})
+		selector = "a"
+		selectorSet = false
 	}
+
+	c.OnHTML(selector, func(e *colly.HTMLElement) {
+		href := e.Attr("href")
+		text := strings.TrimSpace(e.Text)
+		class := e.Attr("class")
+
+		if selectorSet || class != "" && text != "" {
+			classesLinks[class] = append(classesLinks[class], map[string]string{
+				"href": href,
+				"text": text,
+			})
+
+			classesCount[class]++
+
+			if classesCount[class] > classesCount[classMax] {
+				classMax = class
+			}
+		}
+
+	})
 	c.Visit(url)
-	fmt.Println(classesCount)
+
 	links := classesLinks[classMax]
+	if limit != -1 {
+		limit = int(math.Min(float64(limit), float64(len(links))))
+		links = links[:limit]
+	}
 
 	chapters := make([]chapter, len(links))
 	base, err := urllib.Parse(url)
