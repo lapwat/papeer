@@ -24,17 +24,22 @@ chmod +x papeer
 sudo mv papeer /usr/local/bin
 ```
 
-```sh
-# (optional) install kindlegen to export ebooks to MOBI format
-curl https://github.com/lapwat/papeer/raw/master/bin/kindlegen_linux_2.6_i386_v2_9.tar.gz > kindlegen
-chmod +x kindlegen
-sudo mv kindlegen /usr/local/bin
-```
 
 ## From source
 
 ```sh
 go get -u github.com/lapwat/papeer
+```
+
+## Install kindlegen to export websites to MOBI (optional)
+
+```sh
+TMPDIR=$(mktemp -d -t papeer-XXXXX)
+curl -L https://github.com/lapwat/papeer/releases/download/kindlegen/kindlegen_linux_2.6_i386_v2_9.tar.gz > $TMPDIR/kindlegen.tar.gz
+tar xzvf $TMPDIR/kindlegen.tar.gz -C $TMPDIR
+chmod +x $TMPDIR/kindlegen
+sudo mv $TMPDIR/kindlegen /usr/local/bin
+rm $TMPDIR
 ```
 
 # Usage
