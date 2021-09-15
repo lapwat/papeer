@@ -16,19 +16,18 @@ Ebook saved to "Hacker_News.epub"
 
 # Installation
 
-## From binary
-
-```sh
-curl https://github.com/lapwat/papeer/releases/download/v0.0.2/papeer-v0.0.2 > papeer
-chmod +x papeer
-sudo mv papeer /usr/local/bin
-```
-
-
 ## From source
 
 ```sh
 go get -u github.com/lapwat/papeer
+```
+
+## From binary
+
+```sh
+curl -L https://github.com/lapwat/papeer/releases/download/v0.0.2/papeer-v0.0.2 > papeer
+chmod +x papeer
+sudo mv papeer /usr/local/bin
 ```
 
 ## Install kindlegen to export websites to MOBI (optional)
