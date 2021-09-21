@@ -24,11 +24,19 @@ go get -u github.com/lapwat/papeer
 
 ## From binary
 
+### On Linux / MacOS
+
 ```sh
-curl -L https://github.com/lapwat/papeer/releases/download/v0.0.2/papeer-v0.0.2 > papeer
+platform=linux
+# platform=darwin for MacOS
+curl -L https://github.com/lapwat/papeer/releases/download/v0.1.0/papeer-v0.1.0-$platform-amd64 > papeer
 chmod +x papeer
 sudo mv papeer /usr/local/bin
 ```
+
+### On Windows
+
+Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.1.0/papeer-v0.1.0-windows-amd64.exe).
 
 ## Install kindlegen to export websites to MOBI (optional)
 
@@ -38,7 +46,7 @@ curl -L https://github.com/lapwat/papeer/releases/download/kindlegen/kindlegen_l
 tar xzvf $TMPDIR/kindlegen.tar.gz -C $TMPDIR
 chmod +x $TMPDIR/kindlegen
 sudo mv $TMPDIR/kindlegen /usr/local/bin
-rm $TMPDIR
+rm -rf $TMPDIR
 ```
 
 # Usage
@@ -58,12 +66,13 @@ Available Commands:
   version     Print the version number of papeer
 
 Flags:
-  -d, --delay int         wait before downloading next chapter, in milliseconds (default -1)
+  -d, --delay int         time to wait before downloading next chapter, in milliseconds (default -1)
   -f, --format string     file format [md, epub, mobi] (default "md")
   -h, --help              help for papeer
   -i, --include           include URL as first chapter, in resursive mode
+  -l, --limit int         limit number of chapters, in recursive mode (default -1)
   -o, --output string     output file
-  -q, --quiet             do not show progress bars
+  -q, --quiet             do not show logs
   -r, --recursive         create one chapter per natigation item
   -s, --selector string   table of content CSS selector
       --stdout            print to standard output

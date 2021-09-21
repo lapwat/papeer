@@ -104,11 +104,13 @@ var getCmd = &cobra.Command{
 					log.Fatal(err)
 				}
 
+				text := fmt.Sprintf("%s\n%s\n\n%s\n\n\n", c.Name(), strings.Repeat("=", len(c.Name())), content)
+
 				if stdout {
-					fmt.Println(content)
+					fmt.Println(text)
 				} else {
 
-					_, err := f.WriteString(content)
+					_, err := f.WriteString(text)
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -126,7 +128,8 @@ var getCmd = &cobra.Command{
 			e.SetAuthor(b.Author())
 
 			for _, c := range b.Chapters() {
-				e.AddSection(c.Content(), c.Name(), "", "")
+				html := fmt.Sprintf("<h1>%s</h1>%s", c.Name(), c.Content())
+				e.AddSection(html, c.Name(), "", "")
 			}
 
 			err := e.Write(output)
