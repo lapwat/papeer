@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	urllib "net/url"
-	"strings"
+	"os"
 
-	colly "github.com/gocolly/colly/v2"
+	"github.com/jedib0t/go-pretty/v6/table"
 	cobra "github.com/spf13/cobra"
+
+	"github.com/lapwat/papeer/book"
 )
 
 var listCmd = &cobra.Command{
@@ -26,44 +27,22 @@ var listCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		if selector == "" {
-			selector = "a"
-		}
+		links := book.GetLinks(base, selector)
 
-		// visit and count link classes
-		classesLinks := map[string][]map[string]string{}
-		classesCount := map[string]int{}
-		classMax := ""
+		t := table.NewWriter()
+		t.SetOutputMirror(os.Stdout)
+		t.AppendHeader(table.Row{"#", "Name", "Url", "Class"})
 
-		c := colly.NewCollector()
-		c.OnHTML(selector, func(e *colly.HTMLElement) {
-			href := e.Attr("href")
-			text := strings.TrimSpace(e.Text)
-			class := e.Attr("class")
-
-			if cmd.Flags().Changed("selector") || class != "" && text != "" {
-				classesLinks[class] = append(classesLinks[class], map[string]string{
-					"href": href,
-					"text": text,
-				})
-
-				classesCount[class]++
-
-				if classesCount[class] > classesCount[classMax] {
-					classMax = class
-				}
-			}
-		})
-
-		c.Visit(base.String())
-		for index, link := range classesLinks[classMax] {
-			u, err := base.Parse(link["href"])
+		for index, link := range links {
+			u, err := base.Parse(link.Href())
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			fmt.Printf("Chapter %d: %s %s\n", index+1, link["text"], u.String())
+			t.AppendRow([]interface{}{index + 1, link.Text(), u.String(), link.Class()})
 		}
+
+		t.Render()
 
 	},
 }

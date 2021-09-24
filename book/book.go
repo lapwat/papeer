@@ -1,27 +1,27 @@
 package book
 
-type Book struct {
+type book struct {
 	name     string
 	author   string
 	chapters []chapter
 }
 
-func New(name, author string) Book {
-	return Book{name, author, []chapter{}}
+func New(name, author string) book {
+	return book{name, author, []chapter{}}
 }
 
-func (b *Book) AddChapter(c chapter) {
+func (b *book) AddChapter(c chapter) {
 	b.chapters = append(b.chapters, c)
 }
 
-func (b Book) Name() string {
+func (b book) Name() string {
 	return b.name
 }
 
-func (b Book) Author() string {
+func (b book) Author() string {
 	return b.name
 }
 
-func (b *Book) Chapters() []chapter {
+func (b *book) Chapters() []chapter {
 	return b.chapters
 }

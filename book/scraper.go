@@ -9,28 +9,32 @@ import (
 	"sync"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	readability "github.com/go-shiori/go-readability"
 	colly "github.com/gocolly/colly/v2"
 	"github.com/gosuri/uiprogress"
 )
 
-type scraper struct {
-	url string
-}
+func NewBookFromURL(url, selector string, recursive, include bool, limit, delay int) book {
+	if recursive {
+		home := NewChapterFromURL(url)
+		b := New(home.Name(), home.Author())
 
-func NewBookFromURL(url, selector string, include bool, limit, delay int) Book {
-	home := NewChapterFromURL(url)
-	b := New(home.Name(), home.Author())
+		chapters := tableOfContent(url, selector, limit, delay)
+		if include {
+			b.AddChapter(home)
+		}
+		for _, c := range chapters {
+			b.AddChapter(c)
+		}
 
-	chapters := tableOfContent(url, selector, limit, delay)
-	if include {
-		b.AddChapter(home)
-	}
-	for _, c := range chapters {
+		return b
+	} else {
+		c := NewChapterFromURL(url)
+		b := New(c.Name(), c.Author())
 		b.AddChapter(c)
+		return b
 	}
-
-	return b
 }
 
 func NewChapterFromURL(url string) chapter {
@@ -39,57 +43,22 @@ func NewChapterFromURL(url string) chapter {
 		log.Fatalf("failed to parse %s, %v\n", url, err)
 	}
 
-	// metadata := fmt.Sprintf("URL     : %s\nTitle   : %s\nAuthor  : %s\nLength  : %d\nExcerpt : %s\nSiteName: %s\nImage   : %s\nFavicon : %s", url, article.Title, article.Byline, article.Length, article.Excerpt, article.SiteName, article.Image, article.Favicon)
-	// fmt.Println(metadata)
-
 	return chapter{article.Title, article.Byline, article.Content}
 }
 
 func tableOfContent(url, selector string, limit, delay int) []chapter {
-	c := colly.NewCollector()
-
-	classesLinks := map[string][]map[string]string{}
-	classesCount := map[string]int{}
-	classMax := ""
-
-	selectorSet := true
-	if selector == "" {
-		selector = "a"
-		selectorSet = false
+	base, err := urllib.Parse(url)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	c.OnHTML(selector, func(e *colly.HTMLElement) {
-		href := e.Attr("href")
-		text := strings.TrimSpace(e.Text)
-		class := e.Attr("class")
-
-		if selectorSet || class != "" && text != "" {
-			classesLinks[class] = append(classesLinks[class], map[string]string{
-				"href": href,
-				"text": text,
-			})
-
-			classesCount[class]++
-
-			if classesCount[class] > classesCount[classMax] {
-				classMax = class
-			}
-		}
-
-	})
-	c.Visit(url)
-
-	links := classesLinks[classMax]
+	links := GetLinks(base, selector)
 	if limit != -1 {
 		limit = int(math.Min(float64(limit), float64(len(links))))
 		links = links[:limit]
 	}
 
 	chapters := make([]chapter, len(links))
-	base, err := urllib.Parse(url)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	// init global progress bar
 	uiprogress.Start()
@@ -102,7 +71,7 @@ func tableOfContent(url, selector string, limit, delay int) []chapter {
 	bars := []*uiprogress.Bar{}
 	for index, link := range links {
 		bar := uiprogress.AddBar(1).AppendCompleted().PrependElapsed()
-		barText := fmt.Sprintf("%d. %s", index+1, link["text"])
+		barText := fmt.Sprintf("%d. %s", index+1, link.text)
 		bar.AppendFunc(func(b *uiprogress.Bar) string {
 			return barText
 		})
@@ -112,7 +81,7 @@ func tableOfContent(url, selector string, limit, delay int) []chapter {
 	if delay >= 0 {
 		for index, link := range links {
 			// and then use it to parse relative URLs
-			u, err := base.Parse(link["href"])
+			u, err := base.Parse(link.href)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -131,14 +100,14 @@ func tableOfContent(url, selector string, limit, delay int) []chapter {
 
 	} else {
 		var wg sync.WaitGroup
-		for index, link := range links {
+		for index, l := range links {
 
 			wg.Add(1)
-			go func(index int, link map[string]string) {
+			go func(index int, l link) {
 				defer wg.Done()
 
 				// and then use it to parse relative URLs
-				u, err := base.Parse(link["href"])
+				u, err := base.Parse(l.href)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -147,9 +116,84 @@ func tableOfContent(url, selector string, limit, delay int) []chapter {
 
 				bars[index].Incr()
 				barGlobal.Incr()
-			}(index, link)
+			}(index, l)
 		}
 		wg.Wait()
 	}
 	return chapters
+}
+
+func GetPath(elm *goquery.Selection) string {
+	path := []string{}
+
+	for {
+		selector := strings.ToLower(goquery.NodeName(elm))
+		if selector == "" {
+			break
+		}
+
+		path = append(path, selector)
+		elm = elm.Parent()
+	}
+
+	join := strings.Join(path, "<")
+	return join
+}
+
+
+func GetLinks(url *urllib.URL, selector string) []link {
+	selectorSet := true
+	if selector == "" {
+		selector = "a"
+		selectorSet = false
+	}
+
+	// visit and count link classes
+	pathLinks := map[string][]link{}
+	pathCount := map[string]int{}
+	pathMax := ""
+
+	c := colly.NewCollector()
+	c.OnHTML(selector, func(e *colly.HTMLElement) {
+		href := e.Attr("href")
+		text := strings.TrimSpace(e.Text)
+		path := GetPath(e.DOM)
+		class := e.Attr("class")
+		key := fmt.Sprintf("%s.%s", path, class)
+
+		if selectorSet || text != "" {
+			pathLinks[key] = append(pathLinks[key], NewLink(href, text, class))
+			pathCount[key] += len(text)
+			// pathCount[key]++
+
+			if pathCount[key] > pathCount[pathMax] {
+				pathMax = key
+			}
+		}
+	})
+	c.Visit(url.String())
+	return pathLinks[pathMax]
+
+	// // visit and count link classes
+	// classesLinks := map[string][]link{}
+	// classesCount := map[string]int{}
+	// classMax := ""
+
+	// c := colly.NewCollector()
+	// c.OnHTML(selector, func(e *colly.HTMLElement) {
+	// 	href := e.Attr("href")
+	// 	text := strings.TrimSpace(e.Text)
+	// 	class := e.Attr("class")
+
+	// 	if selectorSet || class != "" && text != "" {
+	// 		classesLinks[class] = append(classesLinks[class], NewLink(href, text))
+	// 		classesCount[class]++
+
+	// 		if classesCount[class] > classesCount[classMax] {
+	// 			classMax = class
+	// 		}
+	// 	}
+	// })
+	// c.Visit(url.String())
+	// return classesLinks[classMax]
 }

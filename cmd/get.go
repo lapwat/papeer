@@ -68,20 +68,7 @@ var getCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		url := args[0]
-		var b book.Book
-
-		if recursive {
-			b = book.NewBookFromURL(url, selector, include, limit, delay)
-		} else {
-			c := book.NewChapterFromURL(url)
-			b = book.New(c.Name(), c.Author())
-			b.AddChapter(c)
-		}
-
-		// if quiet == false {
-		// 	metadata := fmt.Sprintf("URL     : %s\nTitle   : %s\nAuthor  : %s\nLength  : %d\nExcerpt : %s\nSiteName: %s\nImage   : %s\nFavicon : %s", url, article.Title, article.Byline, article.Length, article.Excerpt, article.SiteName, article.Image, article.Favicon)
-		// 	fmt.Println(metadata)
-		// }
+		b := book.NewBookFromURL(url, selector, recursive, include, limit, delay)
 
 		if len(output) == 0 {
 			// set default output
