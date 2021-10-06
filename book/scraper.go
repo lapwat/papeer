@@ -12,73 +12,66 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	readability "github.com/go-shiori/go-readability"
 	colly "github.com/gocolly/colly/v2"
-	"github.com/gosuri/uiprogress"
 )
 
-func NewBookFromURL(url, selector string, recursive, include bool, limit, delay int) book {
+func NewBookFromURL(url, selector string, recursive, include, images bool, limit, offset, delay int) book {
 	if recursive {
-		home := NewChapterFromURL(url)
-		b := New(home.Name(), home.Author())
+		chapters := tableOfContent(url, selector, limit, offset, delay, include, images)
 
-		chapters := tableOfContent(url, selector, limit, delay)
-		if include {
-			b.AddChapter(home)
-		}
+		b := New(chapters[0].Name(), chapters[0].Author())
 		for _, c := range chapters {
 			b.AddChapter(c)
 		}
 
 		return b
 	} else {
-		c := NewChapterFromURL(url)
+		c := NewChapterFromURL(url, images)
 		b := New(c.Name(), c.Author())
 		b.AddChapter(c)
 		return b
 	}
 }
 
-func NewChapterFromURL(url string) chapter {
+func NewChapterFromURL(url string, images bool) chapter {
 	article, err := readability.FromURL(url, 30*time.Second)
 	if err != nil {
 		log.Fatalf("failed to parse %s, %v\n", url, err)
 	}
 
-	return chapter{article.Title, article.Byline, article.Content}
+	content := strings.ReplaceAll(article.Content, "\n", "")
+
+	if images {
+		// Load the HTML document
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Find the review items
+		doc.Find("img").Each(func(i int, s *goquery.Selection) {
+			content, _ = goquery.OuterHtml(s)
+		})
+	}
+
+	return chapter{article.Title, article.Byline, content}
 }
 
-func tableOfContent(url, selector string, limit, delay int) []chapter {
+func tableOfContent(url, selector string, limit, offset, delay int, include, images bool) []chapter {
 	base, err := urllib.Parse(url)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	links := GetLinks(base, selector)
-	if limit != -1 {
-		limit = int(math.Min(float64(limit), float64(len(links))))
-		links = links[:limit]
+	links, err := GetLinks(base, selector, limit, offset, include)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	chapters := make([]chapter, len(links))
-
-	// init global progress bar
-	uiprogress.Start()
-	barGlobal := uiprogress.AddBar(len(links)).AppendCompleted().PrependElapsed()
-	barGlobal.AppendFunc(func(b *uiprogress.Bar) string {
-		return fmt.Sprintf("Status: %d out of %d chapters", b.Current(), len(links))
-	})
-
-	// init progress bars
-	bars := []*uiprogress.Bar{}
-	for index, link := range links {
-		bar := uiprogress.AddBar(1).AppendCompleted().PrependElapsed()
-		barText := fmt.Sprintf("%d. %s", index+1, link.text)
-		bar.AppendFunc(func(b *uiprogress.Bar) string {
-			return barText
-		})
-		bars = append(bars, bar)
-	}
+	progress := NewProgress(links)
 
 	if delay >= 0 {
+
 		for index, link := range links {
 			// and then use it to parse relative URLs
 			u, err := base.Parse(link.href)
@@ -86,16 +79,15 @@ func tableOfContent(url, selector string, limit, delay int) []chapter {
 				log.Fatal(err)
 			}
 
-			chapters[index] = NewChapterFromURL(u.String())
+			chapters[index] = NewChapterFromURL(u.String(), images)
+			progress.Incr(index)
 
-			bars[index].Incr()
-			barGlobal.Incr()
-
-			// do not wait after downloading last chapter
-			if index < len(links)-1 {
-				time.Sleep(time.Duration(delay) * time.Millisecond)
+			// short sleep for last chapter to let the progress bar update
+			if index == len(links)-1 {
+				delay = 100
 			}
 
+			time.Sleep(time.Duration(delay) * time.Millisecond)
 		}
 
 	} else {
@@ -112,10 +104,9 @@ func tableOfContent(url, selector string, limit, delay int) []chapter {
 					log.Fatal(err)
 				}
 
-				chapters[index] = NewChapterFromURL(u.String())
+				chapters[index] = NewChapterFromURL(u.String(), images)
+				progress.Incr(index)
 
-				bars[index].Incr()
-				barGlobal.Incr()
 			}(index, l)
 		}
 		wg.Wait()
@@ -140,8 +131,7 @@ func GetPath(elm *goquery.Selection) string {
 	return join
 }
 
-
-func GetLinks(url *urllib.URL, selector string) []link {
+func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool) ([]link, error) {
 	selectorSet := true
 	if selector == "" {
 		selector = "a"
@@ -158,13 +148,17 @@ func GetLinks(url *urllib.URL, selector string) []link {
 		href := e.Attr("href")
 		text := strings.TrimSpace(e.Text)
 		path := GetPath(e.DOM)
-		class := e.Attr("class")
-		key := fmt.Sprintf("%s.%s", path, class)
+		key := path
+
+		// include element class in key if selector is set
+		if !selectorSet {
+			class := e.Attr("class")
+			key = fmt.Sprintf("%s.%s", path, class)
+		}
 
 		if selectorSet || text != "" {
-			pathLinks[key] = append(pathLinks[key], NewLink(href, text, class))
+			pathLinks[key] = append(pathLinks[key], NewLink(href, text))
 			pathCount[key] += len(text)
-			// pathCount[key]++
 
 			if pathCount[key] > pathCount[pathMax] {
 				pathMax = key
@@ -172,28 +166,24 @@ func GetLinks(url *urllib.URL, selector string) []link {
 		}
 	})
 	c.Visit(url.String())
-	return pathLinks[pathMax]
 
-	// // visit and count link classes
-	// classesLinks := map[string][]link{}
-	// classesCount := map[string]int{}
-	// classMax := ""
+	links := pathLinks[pathMax]
+	if len(links) == 0 {
+		return []link{}, fmt.Errorf("no link found for selector: %s", selector)
+	}
 
-	// c := colly.NewCollector()
-	// c.OnHTML(selector, func(e *colly.HTMLElement) {
-	// 	href := e.Attr("href")
-	// 	text := strings.TrimSpace(e.Text)
-	// 	class := e.Attr("class")
+	end := len(links)
+	if limit != -1 {
+		end = int(math.Min(float64(limit+offset), float64(len(links))))
+	}
 
-	// 	if selectorSet || class != "" && text != "" {
-	// 		classesLinks[class] = append(classesLinks[class], NewLink(href, text))
-	// 		classesCount[class]++
+	links = links[offset:end]
 
-	// 		if classesCount[class] > classesCount[classMax] {
-	// 			classMax = class
-	// 		}
-	// 	}
-	// })
-	// c.Visit(url.String())
-	// return classesLinks[classMax]
+	if include {
+		c := NewChapterFromURL(url.String(), false)
+		l := NewLink(url.String(), c.Name())
+		links = append([]link{l}, links...)
+	}
+
+	return links, nil
 }

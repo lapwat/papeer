@@ -15,9 +15,9 @@ import (
 	"github.com/lapwat/papeer/book"
 )
 
-var quiet, stdout, recursive, include bool
+var stdout, recursive, include, images bool
 var format, output, selector string
-var limit, delay int
+var limit, offset, delay int
 
 var getCmd = &cobra.Command{
 	Use:   "get",
@@ -60,6 +60,10 @@ var getCmd = &cobra.Command{
 			return errors.New("cannot use limit option if not in recursive mode")
 		}
 
+		if cmd.Flags().Changed("offset") && recursive == false {
+			return errors.New("cannot use offset option if not in recursive mode")
+		}
+
 		if cmd.Flags().Changed("delay") && recursive == false {
 			return errors.New("cannot use delay option if not in recursive mode")
 		}
@@ -68,7 +72,7 @@ var getCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		url := args[0]
-		b := book.NewBookFromURL(url, selector, recursive, include, limit, delay)
+		b := book.NewBookFromURL(url, selector, recursive, include, images, limit, offset, delay)
 
 		if len(output) == 0 {
 			// set default output
@@ -78,12 +82,16 @@ var getCmd = &cobra.Command{
 		}
 
 		if format == "md" {
-			f, err := os.Create(output)
-			if err != nil {
-				log.Fatal(err)
-			}
+			var f *os.File
+			var err error
 
-			defer f.Close()
+			if !stdout {
+				f, err = os.Create(output)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer f.Close()
+			}
 
 			for _, c := range b.Chapters() {
 				content, err := md.NewConverter("", true, nil).ConvertString(c.Content())
@@ -96,7 +104,6 @@ var getCmd = &cobra.Command{
 				if stdout {
 					fmt.Println(text)
 				} else {
-
 					_, err := f.WriteString(text)
 					if err != nil {
 						log.Fatal(err)
@@ -115,8 +122,16 @@ var getCmd = &cobra.Command{
 			e.SetAuthor(b.Author())
 
 			for _, c := range b.Chapters() {
-				html := fmt.Sprintf("<h1>%s</h1>%s", c.Name(), c.Content())
-				e.AddSection(html, c.Name(), "", "")
+				if images {
+					e.AddSection(c.Content(), "", "", "")
+				} else {
+					html := fmt.Sprintf("<h1>%s</h1>%s", c.Name(), c.Content())
+
+					_, err := e.AddSection(html, c.Name(), "", "")
+					if err != nil {
+						log.Fatal(err)
+					}
+				}
 			}
 
 			err := e.Write(output)
@@ -152,7 +167,7 @@ var getCmd = &cobra.Command{
 
 			err2 := os.Remove(outputEPUB)
 			if err2 != nil {
-				log.Fatal(err)
+				log.Fatal(err2)
 			}
 		}
 	},

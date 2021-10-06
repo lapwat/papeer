@@ -27,11 +27,17 @@ var listCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		links := book.GetLinks(base, selector)
+		links, err := book.GetLinks(base, selector, limit, offset, include)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)
-		t.AppendHeader(table.Row{"#", "Name", "Url", "Class"})
+		t.Style().Options.DrawBorder = false
+		t.Style().Options.SeparateColumns = false
+		t.Style().Options.SeparateHeader = false
+		t.AppendHeader(table.Row{"#", "Name", "Url"})
 
 		for index, link := range links {
 			u, err := base.Parse(link.Href())
@@ -39,7 +45,7 @@ var listCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 
-			t.AppendRow([]interface{}{index + 1, link.Text(), u.String(), link.Class()})
+			t.AppendRow([]interface{}{index + 1, link.Text(), u.String()})
 		}
 
 		t.Render()

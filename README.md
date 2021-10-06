@@ -1,16 +1,16 @@
 ```
-❯ papeer get --format epub --recursive --delay 500 --limit 10 https://news.ycombinator.com/
-   6s [===============================================>--------------------]  70% Status: 7 out of 10 chapters
-   0s [====================================================================] 100% 1. Three ex-US intelligence officers admit hacking for UAE
-   0s [====================================================================] 100% 2. Show HN: Time Travel Debugger
-   0s [====================================================================] 100% 3. How much faster is Java 17?
-   0s [====================================================================] 100% 4. The First Webcam Was Invented to Keep an Eye on a Coffee Pot
-   0s [====================================================================] 100% 5. Nikon's 2021 Photomicrography Competition Winners
-   0s [====================================================================] 100% 6. HTTP Status 418 – I'm a teapot
-   0s [====================================================================] 100% 7. H3: Hexagonal hierarchical geospatial indexing system
-  --- [--------------------------------------------------------------------]   0% 8. Automatic cipher suite ordering in Go’s crypto/tls
-  --- [--------------------------------------------------------------------]   0% 9. Find engineering roles at over 800 YC-funded startups
-  --- [--------------------------------------------------------------------]   0% 10. Futarchy: Robin Hanson on prediction markets
+❯ papeer get --format=epub --recursive --delay=500 --limit=10 https://news.ycombinator.com/
+[===============================================>--------------------] Chapters 7 / 10
+[====================================================================] 1. Three ex-US intelligence officers admit hacking for UAE
+[====================================================================] 2. Show HN: Time Travel Debugger
+[====================================================================] 3. How much faster is Java 17?
+[====================================================================] 4. The First Webcam Was Invented to Keep an Eye on a Coffee Pot
+[====================================================================] 5. Nikon's 2021 Photomicrography Competition Winners
+[====================================================================] 6. HTTP Status 418 – I'm a teapot
+[====================================================================] 7. H3: Hexagonal hierarchical geospatial indexing system
+[--------------------------------------------------------------------] 8. Automatic cipher suite ordering in Go’s crypto/tls
+[--------------------------------------------------------------------] 9. Find engineering roles at over 800 YC-funded startups
+[--------------------------------------------------------------------] 10. Futarchy: Robin Hanson on prediction markets
 Ebook saved to "Hacker_News.epub"
 ```
 
@@ -29,14 +29,14 @@ go get -u github.com/lapwat/papeer
 ```sh
 platform=linux
 # platform=darwin for MacOS
-curl -L https://github.com/lapwat/papeer/releases/download/v0.1.0/papeer-v0.1.0-$platform-amd64 > papeer
+curl -L https://github.com/lapwat/papeer/releases/download/v0.2.0/papeer-v0.2.0-$platform-amd64 > papeer
 chmod +x papeer
 sudo mv papeer /usr/local/bin
 ```
 
 ### On Windows
 
-Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.1.0/papeer-v0.1.0-windows-amd64.exe).
+Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.2.0/papeer-v0.2.0-windows-amd64.exe).
 
 ## Install kindlegen to export websites to MOBI (optional)
 
@@ -69,10 +69,11 @@ Flags:
   -d, --delay int         time to wait before downloading next chapter, in milliseconds (default -1)
   -f, --format string     file format [md, epub, mobi] (default "md")
   -h, --help              help for papeer
+      --images            retrieve images only
   -i, --include           include URL as first chapter, in resursive mode
   -l, --limit int         limit number of chapters, in recursive mode (default -1)
-  -o, --output string     output file
-  -q, --quiet             do not show logs
+  -o, --offset int        skip first chapters, in recursive mode
+      --output string     output file
   -r, --recursive         create one chapter per natigation item
   -s, --selector string   table of content CSS selector
       --stdout            print to standard output

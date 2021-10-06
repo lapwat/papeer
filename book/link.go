@@ -3,11 +3,10 @@ package book
 type link struct {
 	href string
 	text string
-	class string
 }
 
-func NewLink(href, text, class string) link {
-	return link{href, text, class}
+func NewLink(href, text string) link {
+	return link{href, text}
 }
 
 func (c link) Href() string {
@@ -16,8 +15,4 @@ func (c link) Href() string {
 
 func (c link) Text() string {
 	return c.text
-}
-
-func (c link) Class() string {
-	return c.class
 }
