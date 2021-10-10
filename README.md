@@ -75,8 +75,9 @@ Flags:
   -o, --offset int        skip first chapters, in recursive mode
       --output string     output file
   -r, --recursive         create one chapter per natigation item
-  -s, --selector string   table of content CSS selector
+  -s, --selector string   table of content CSS selector, in resursive mode
       --stdout            print to standard output
+  -t, --threads int       download concurrency, in recursive mode (default -1)
 
 Use "papeer [command] --help" for more information about a command.
 ```

@@ -14,9 +14,9 @@ import (
 	colly "github.com/gocolly/colly/v2"
 )
 
-func NewBookFromURL(url, selector string, recursive, include, images bool, limit, offset, delay int) book {
+func NewBookFromURL(url, selector string, recursive, include, images bool, limit, offset, delay, threads int) book {
 	if recursive {
-		chapters := tableOfContent(url, selector, limit, offset, delay, include, images)
+		chapters := tableOfContent(url, selector, limit, offset, delay, threads, include, images)
 
 		b := New(chapters[0].Name(), chapters[0].Author())
 		for _, c := range chapters {
@@ -56,7 +56,7 @@ func NewChapterFromURL(url string, images bool) chapter {
 	return chapter{article.Title, article.Byline, content}
 }
 
-func tableOfContent(url, selector string, limit, offset, delay int, include, images bool) []chapter {
+func tableOfContent(url, selector string, limit, offset, delay, threads int, include, images bool) []chapter {
 	base, err := urllib.Parse(url)
 	if err != nil {
 		log.Fatal(err)
@@ -71,6 +71,7 @@ func tableOfContent(url, selector string, limit, offset, delay int, include, ima
 	progress := NewProgress(links)
 
 	if delay >= 0 {
+		// synchronous mode
 
 		for index, link := range links {
 			// and then use it to parse relative URLs
@@ -91,10 +92,19 @@ func tableOfContent(url, selector string, limit, offset, delay int, include, ima
 		}
 
 	} else {
+		// asynchronous mode
 		var wg sync.WaitGroup
+
+		if threads == -1 {
+			threads = len(links)
+		}
+		semaphore := make(chan bool, threads)
+
 		for index, l := range links {
 
 			wg.Add(1)
+			semaphore <- true
+
 			go func(index int, l link) {
 				defer wg.Done()
 
@@ -107,6 +117,7 @@ func tableOfContent(url, selector string, limit, offset, delay int, include, ima
 				chapters[index] = NewChapterFromURL(u.String(), images)
 				progress.Incr(index)
 
+				<-semaphore
 			}(index, l)
 		}
 		wg.Wait()

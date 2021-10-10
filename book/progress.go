@@ -19,8 +19,8 @@ func NewProgress(links []link) progress {
 		return fmt.Sprintf("Chapters %d / %d", b.Current(), len(links))
 	})
 
-	individuals := []*uiprogress.Bar{}
 	// hide individual bars if more than 50 chapters
+	individuals := []*uiprogress.Bar{}
 	if len(links) <= 50 {
 		for index, link := range links {
 			bar := uiprogress.AddBar(1)

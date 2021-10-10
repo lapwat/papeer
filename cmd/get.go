@@ -17,7 +17,7 @@ import (
 
 var stdout, recursive, include, images bool
 var format, output, selector string
-var limit, offset, delay int
+var limit, offset, delay, threads int
 
 var getCmd = &cobra.Command{
 	Use:   "get",
@@ -68,11 +68,19 @@ var getCmd = &cobra.Command{
 			return errors.New("cannot use delay option if not in recursive mode")
 		}
 
+		if cmd.Flags().Changed("threads") && recursive == false {
+			return errors.New("cannot use threads option if not in recursive mode")
+		}
+
+		if cmd.Flags().Changed("delay") && cmd.Flags().Changed("threads") {
+			return errors.New("cannot use delay and threads options at the same time")
+		}
+
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		url := args[0]
-		b := book.NewBookFromURL(url, selector, recursive, include, images, limit, offset, delay)
+		b := book.NewBookFromURL(url, selector, recursive, include, images, limit, offset, delay, threads)
 
 		if len(output) == 0 {
 			// set default output

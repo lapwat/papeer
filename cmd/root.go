@@ -33,6 +33,7 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&limit, "limit", "l", -1, "limit number of chapters, in recursive mode")
 	rootCmd.PersistentFlags().IntVarP(&offset, "offset", "o", 0, "skip first chapters, in recursive mode")
 	rootCmd.PersistentFlags().IntVarP(&delay, "delay", "d", -1, "time to wait before downloading next chapter, in milliseconds")
+	rootCmd.PersistentFlags().IntVarP(&threads, "threads", "t", -1, "download concurrency, in recursive mode")
 
 	rootCmd.AddCommand(getCmd)
 	rootCmd.AddCommand(listCmd)
