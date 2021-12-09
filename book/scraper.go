@@ -41,15 +41,17 @@ func NewChapterFromURL(url string, images bool) chapter {
 	content := strings.ReplaceAll(article.Content, "\n", "")
 
 	if images {
-		// Load the HTML document
+		// parse html content
 		doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		// Find the review items
+		// extract images only
+		content = ""
 		doc.Find("img").Each(func(i int, s *goquery.Selection) {
-			content, _ = goquery.OuterHtml(s)
+			newContent, _ := goquery.OuterHtml(s)
+			content += newContent
 		})
 	}
 

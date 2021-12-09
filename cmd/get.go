@@ -9,13 +9,14 @@ import (
 	"strings"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/PuerkitoBio/goquery"
 	epub "github.com/bmaupin/go-epub"
-	cobra "github.com/spf13/cobra"
+	"github.com/spf13/cobra"
 
 	"github.com/lapwat/papeer/book"
 )
 
-var stdout, recursive, include, images bool
+var recursive, include, images bool
 var format, output, selector string
 var limit, offset, delay, threads int
 
@@ -28,20 +29,16 @@ var getCmd = &cobra.Command{
 		}
 
 		formatEnum := map[string]bool{
-			"md":   true,
-			"epub": true,
-			"mobi": true,
+			"stdout": true,
+			"md":     true,
+			"epub":   true,
+			"mobi":   true,
 		}
 		if formatEnum[format] != true {
 			return fmt.Errorf("invalid format specified: %s", format)
 		}
 
-		if format == "epub" || format == "mobi" {
-			if stdout {
-				return errors.New("cannot print EPUB/MOBI file to standard output")
-			}
-		}
-
+		// add .mobi to filename if not specified
 		if format == "mobi" {
 			if len(output) > 0 && strings.HasSuffix(output, ".mobi") == false {
 				output = fmt.Sprintf("%s.mobi", output)
@@ -89,19 +86,10 @@ var getCmd = &cobra.Command{
 			output = fmt.Sprintf("%s.%s", output, format)
 		}
 
-		if format == "md" {
-			var f *os.File
-			var err error
-
-			if !stdout {
-				f, err = os.Create(output)
-				if err != nil {
-					log.Fatal(err)
-				}
-				defer f.Close()
-			}
+		if format == "stdout" {
 
 			for _, c := range b.Chapters() {
+				// convert to markdown
 				content, err := md.NewConverter("", true, nil).ConvertString(c.Content())
 				if err != nil {
 					log.Fatal(err)
@@ -109,20 +97,38 @@ var getCmd = &cobra.Command{
 
 				text := fmt.Sprintf("%s\n%s\n\n%s\n\n\n", c.Name(), strings.Repeat("=", len(c.Name())), content)
 
-				if stdout {
-					fmt.Println(text)
-				} else {
-					_, err := f.WriteString(text)
-					if err != nil {
-						log.Fatal(err)
-					}
+				// write to stdout
+				fmt.Println(text)
+			}
 
+		}
+
+		if format == "md" {
+
+			// create markdown file
+			f, err := os.Create(output)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer f.Close()
+
+			for _, c := range b.Chapters() {
+				// convert to markdown
+				content, err := md.NewConverter("", true, nil).ConvertString(c.Content())
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				text := fmt.Sprintf("%s\n%s\n\n%s\n\n\n", c.Name(), strings.Repeat("=", len(c.Name())), content)
+
+				// write to markdown file
+				_, err = f.WriteString(text)
+				if err != nil {
+					log.Fatal(err)
 				}
 			}
 
-			if stdout == false {
-				fmt.Printf("Markdown saved to \"%s\"\n", output)
-			}
+			fmt.Printf("Markdown saved to \"%s\"\n", output)
 		}
 
 		if format == "epub" {
@@ -130,16 +136,27 @@ var getCmd = &cobra.Command{
 			e.SetAuthor(b.Author())
 
 			for _, c := range b.Chapters() {
-				if images {
-					e.AddSection(c.Content(), "", "", "")
-				} else {
-					html := fmt.Sprintf("<h1>%s</h1>%s", c.Name(), c.Content())
-
-					_, err := e.AddSection(html, c.Name(), "", "")
-					if err != nil {
-						log.Fatal(err)
-					}
+				// parse content 
+				doc, err := goquery.NewDocumentFromReader(strings.NewReader(c.Content()))
+				if err != nil {
+					log.Fatal(err)
 				}
+
+				// retrieve images and download it
+				contentWithLocalImages := c.Content()
+				doc.Find("img").Each(func(i int, s *goquery.Selection) {
+					src, _ := s.Attr("src")
+					imagePath, _ := e.AddImage(src, "")
+
+					contentWithLocalImages = strings.ReplaceAll(contentWithLocalImages, src, imagePath)
+				})
+
+				html := fmt.Sprintf("<h1>%s</h1>%s", c.Name(), contentWithLocalImages)
+				_, err = e.AddSection(html, c.Name(), "", "")
+				if err != nil {
+					log.Fatal(err)
+				}
+
 			}
 
 			err := e.Write(output)
