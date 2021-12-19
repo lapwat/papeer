@@ -97,14 +97,14 @@ go get -u github.com/lapwat/papeer
 
 ```sh
 platform=linux # use platform=darwin for MacOS
-curl -L https://github.com/lapwat/papeer/releases/download/v0.3.0/papeer-v0.3.0-$platform-amd64 > papeer
+curl -L https://github.com/lapwat/papeer/releases/download/v0.3.1/papeer-v0.3.1-$platform-amd64 > papeer
 chmod +x papeer
 sudo mv papeer /usr/local/bin
 ```
 
 ### On Windows
 
-Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.3.0/papeer-v0.3.0-windows-amd64.exe).
+Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.3.1/papeer-v0.3.1-windows-amd64.exe).
 
 ## Install kindlegen to export websites to MOBI (optional)
 
