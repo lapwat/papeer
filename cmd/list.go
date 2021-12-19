@@ -27,7 +27,7 @@ var listCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		links, err := book.GetLinks(base, selector, limit, offset, include)
+		links, _, err := book.GetLinks(base, selector, limit, offset, include)
 		if err != nil {
 			log.Fatal(err)
 		}

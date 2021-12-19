@@ -23,8 +23,10 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.PersistentFlags().StringVarP(&name, "name", "n", "", "book name (default: page title)")
+	rootCmd.PersistentFlags().StringVarP(&author, "author", "a", "", "book author")
 	rootCmd.PersistentFlags().StringVarP(&format, "format", "f", "stdout", "file format [stdout, md, epub, mobi]")
-	rootCmd.PersistentFlags().StringVarP(&output, "output", "", "", "output file")
+	rootCmd.PersistentFlags().StringVarP(&output, "output", "", "", "file name (default: book name)")
 	rootCmd.PersistentFlags().StringVarP(&selector, "selector", "s", "", "table of content CSS selector, in resursive mode")
 	rootCmd.PersistentFlags().BoolVarP(&recursive, "recursive", "r", false, "create one chapter per natigation item")
 	rootCmd.PersistentFlags().BoolVarP(&include, "include", "i", false, "include URL as first chapter, in resursive mode")

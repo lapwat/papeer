@@ -14,25 +14,34 @@ import (
 	colly "github.com/gocolly/colly/v2"
 )
 
-func NewBookFromURL(url, selector string, recursive, include, images bool, limit, offset, delay, threads int) book {
+func NewBookFromURL(url, selector, name, author string, recursive, include bool, limit, offset, delay, threads int) book {
+	var chapters []chapter
+	var home chapter
+
 	if recursive {
-		chapters := tableOfContent(url, selector, limit, offset, delay, threads, include, images)
-
-		b := New(chapters[0].Name(), chapters[0].Author())
-		for _, c := range chapters {
-			b.AddChapter(c)
-		}
-
-		return b
+		chapters, home = tableOfContent(url, selector, limit, offset, delay, threads, include)
 	} else {
-		c := NewChapterFromURL(url, images)
-		b := New(c.Name(), c.Author())
-		b.AddChapter(c)
-		return b
+		chapters = []chapter{NewChapterFromURL(url)}
+		home = chapters[0]
 	}
+
+	if len(name) == 0 {
+		name = home.Name()
+	}
+
+	if len(author) == 0 {
+		author = home.Author()
+	}
+
+	b := New(name, author)
+	for _, c := range chapters {
+		b.AddChapter(c)
+	}
+
+	return b
 }
 
-func NewChapterFromURL(url string, images bool) chapter {
+func NewChapterFromURL(url string) chapter {
 	article, err := readability.FromURL(url, 30*time.Second)
 	if err != nil {
 		log.Fatalf("failed to parse %s, %v\n", url, err)
@@ -40,31 +49,31 @@ func NewChapterFromURL(url string, images bool) chapter {
 
 	content := strings.ReplaceAll(article.Content, "\n", "")
 
-	if images {
-		// parse html content
-		doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
-		if err != nil {
-			log.Fatal(err)
-		}
+	// if images {
+	// 	// parse html content
+	// 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
 
-		// extract images only
-		content = ""
-		doc.Find("img").Each(func(i int, s *goquery.Selection) {
-			newContent, _ := goquery.OuterHtml(s)
-			content += newContent
-		})
-	}
+	// 	// extract images only
+	// 	content = ""
+	// 	doc.Find("img").Each(func(i int, s *goquery.Selection) {
+	// 		newContent, _ := goquery.OuterHtml(s)
+	// 		content += newContent
+	// 	})
+	// }
 
 	return chapter{article.Title, article.Byline, content}
 }
 
-func tableOfContent(url, selector string, limit, offset, delay, threads int, include, images bool) []chapter {
+func tableOfContent(url, selector string, limit, offset, delay, threads int, include bool) ([]chapter, chapter) {
 	base, err := urllib.Parse(url)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	links, err := GetLinks(base, selector, limit, offset, include)
+	links, home, err := GetLinks(base, selector, limit, offset, include)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,7 +91,7 @@ func tableOfContent(url, selector string, limit, offset, delay, threads int, inc
 				log.Fatal(err)
 			}
 
-			chapters[index] = NewChapterFromURL(u.String(), images)
+			chapters[index] = NewChapterFromURL(u.String())
 			progress.Incr(index)
 
 			// short sleep for last chapter to let the progress bar update
@@ -116,7 +125,7 @@ func tableOfContent(url, selector string, limit, offset, delay, threads int, inc
 					log.Fatal(err)
 				}
 
-				chapters[index] = NewChapterFromURL(u.String(), images)
+				chapters[index] = NewChapterFromURL(u.String())
 				progress.Incr(index)
 
 				<-semaphore
@@ -124,7 +133,8 @@ func tableOfContent(url, selector string, limit, offset, delay, threads int, inc
 		}
 		wg.Wait()
 	}
-	return chapters
+
+	return chapters, home
 }
 
 func GetPath(elm *goquery.Selection) string {
@@ -144,7 +154,7 @@ func GetPath(elm *goquery.Selection) string {
 	return join
 }
 
-func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool) ([]link, error) {
+func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool) ([]link, chapter, error) {
 	selectorSet := true
 	if selector == "" {
 		selector = "a"
@@ -182,7 +192,7 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool)
 
 	links := pathLinks[pathMax]
 	if len(links) == 0 {
-		return []link{}, fmt.Errorf("no link found for selector: %s", selector)
+		return []link{}, chapter{}, fmt.Errorf("no link found for selector: %s", selector)
 	}
 
 	end := len(links)
@@ -192,11 +202,12 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool)
 
 	links = links[offset:end]
 
+	home := NewChapterFromURL(url.String())
+
 	if include {
-		c := NewChapterFromURL(url.String(), false)
-		l := NewLink(url.String(), c.Name())
+		l := NewLink(url.String(), home.Name())
 		links = append([]link{l}, links...)
 	}
 
-	return links, nil
+	return links, home, nil
 }

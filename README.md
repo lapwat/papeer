@@ -19,14 +19,16 @@ Available Commands:
   version     Print the version number of papeer
 
 Flags:
+  -a, --author string     book author
   -d, --delay int         time to wait before downloading next chapter, in milliseconds (default -1)
   -f, --format string     file format [stdout, md, epub, mobi] (default "stdout")
   -h, --help              help for papeer
       --images            retrieve images only
   -i, --include           include URL as first chapter, in resursive mode
   -l, --limit int         limit number of chapters, in recursive mode (default -1)
+  -n, --name string       book name (default: page title)
   -o, --offset int        skip first chapters, in recursive mode
-      --output string     output file
+      --output string     file name (default: book name)
   -r, --recursive         create one chapter per natigation item
   -s, --selector string   table of content CSS selector, in resursive mode
   -t, --threads int       download concurrency, in recursive mode (default -1)

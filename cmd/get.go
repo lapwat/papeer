@@ -17,7 +17,7 @@ import (
 )
 
 var recursive, include, images bool
-var format, output, selector string
+var format, output, selector, name, author string
 var limit, offset, delay, threads int
 
 var getCmd = &cobra.Command{
@@ -77,7 +77,7 @@ var getCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		url := args[0]
-		b := book.NewBookFromURL(url, selector, recursive, include, images, limit, offset, delay, threads)
+		b := book.NewBookFromURL(url, selector, name, author, recursive, include, limit, offset, delay, threads)
 
 		if len(output) == 0 {
 			// set default output
@@ -136,27 +136,36 @@ var getCmd = &cobra.Command{
 			e.SetAuthor(b.Author())
 
 			for _, c := range b.Chapters() {
-				// parse content 
+				var content string
+
+				if images == false {
+					content = c.Content()
+				}
+
+				// parse content
 				doc, err := goquery.NewDocumentFromReader(strings.NewReader(c.Content()))
 				if err != nil {
 					log.Fatal(err)
 				}
 
 				// retrieve images and download it
-				contentWithLocalImages := c.Content()
 				doc.Find("img").Each(func(i int, s *goquery.Selection) {
 					src, _ := s.Attr("src")
 					imagePath, _ := e.AddImage(src, "")
 
-					contentWithLocalImages = strings.ReplaceAll(contentWithLocalImages, src, imagePath)
+					if images {
+						imageTag, _ := goquery.OuterHtml(s)
+						content += imageTag
+					}
+
+					content = strings.ReplaceAll(content, src, imagePath)
 				})
 
-				html := fmt.Sprintf("<h1>%s</h1>%s", c.Name(), contentWithLocalImages)
+				html := fmt.Sprintf("<h1>%s</h1>%s", c.Name(), content)
 				_, err = e.AddSection(html, c.Name(), "", "")
 				if err != nil {
 					log.Fatal(err)
 				}
-
 			}
 
 			err := e.Write(output)
@@ -171,8 +180,37 @@ var getCmd = &cobra.Command{
 			e := epub.NewEpub(b.Name())
 			e.SetAuthor(b.Author())
 
-			for _, chapter := range b.Chapters() {
-				e.AddSection(chapter.Content(), chapter.Name(), "", "")
+			for _, c := range b.Chapters() {
+				var content string
+
+				if images == false {
+					content = c.Content()
+				}
+
+				// parse content
+				doc, err := goquery.NewDocumentFromReader(strings.NewReader(c.Content()))
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				// retrieve images and download it
+				doc.Find("img").Each(func(i int, s *goquery.Selection) {
+					src, _ := s.Attr("src")
+					imagePath, _ := e.AddImage(src, "")
+
+					if images {
+						imageTag, _ := goquery.OuterHtml(s)
+						content += imageTag
+					}
+
+					content = strings.ReplaceAll(content, src, imagePath)
+				})
+
+				html := fmt.Sprintf("<h1>%s</h1>%s", c.Name(), content)
+				_, err = e.AddSection(html, c.Name(), "", "")
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 
 			outputEPUB := strings.ReplaceAll(output, ".mobi", ".epub")
@@ -183,16 +221,16 @@ var getCmd = &cobra.Command{
 			}
 
 			exec.Command("kindlegen", outputEPUB).Run()
-			// exec command always return status 1 even if it fails
+			// exec command always return status 1 even if it succeed
 			// if err != nil {
 			// 	log.Fatal(err)
 			// }
 
 			fmt.Printf("Ebook saved to \"%s\"\n", output)
 
-			err2 := os.Remove(outputEPUB)
-			if err2 != nil {
-				log.Fatal(err2)
+			err = os.Remove(outputEPUB)
+			if err != nil {
+				log.Fatal(err)
 			}
 		}
 	},
