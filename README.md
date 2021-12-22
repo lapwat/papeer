@@ -59,13 +59,20 @@ The `recursive` option lets you extract the table of content of a website, then 
 Before trying the `recursive` option, it is a good idea to use the `ls` option, which lets you vizualize the content that will be retrieved. You can use several options to customize the table of content extraction, such as `selector`, `limit`, `offset` and `include`. Type `papeer help` for more information about those options.
 
 ```sh
-papeer ls https://news.ycombinator.com/ --limit=5
-#  #  NAME                                                      URL                                                                                             
-#  1  Tailwind CSS v3.0                                         https://tailwindcss.com/blog/tailwindcss-v3                                                     
-#  2  A molten salt storage solution using sodium hydroxide     https://sifted.eu/articles/salt-energy-storage-seaborg-hyme/                                    
-#  3  HashiCorp IPO today                                       https://www.hashicorp.com/blog/a-new-chapter-for-hashicorp                                      
-#  4  Stack Graphs                                              https://github.blog/2021-12-09-introducing-stack-graphs/
-#  5  ‘Tipping point’ makes partisan polarization irreversible  https://news.cornell.edu/stories/2021/12/tipping-point-makes-partisan-polarization-irreversible 
+papeer ls https://12factor.net/ -s 'section.concrete > article > h2 > a'
+#  #  NAME                    URL                                    
+#  1  I. Codebase             https://12factor.net/codebase          
+#  2  II. Dependencies        https://12factor.net/dependencies      
+#  3  III. Config             https://12factor.net/config            
+#  4  IV. Backing services    https://12factor.net/backing-services  
+#  5  V. Build, release, run  https://12factor.net/build-release-run 
+#  6  VI. Processes           https://12factor.net/processes         
+#  7  VII. Port binding       https://12factor.net/port-binding      
+#  8  VIII. Concurrency       https://12factor.net/concurrency       
+#  9  IX. Disposability       https://12factor.net/disposability     
+# 10  X. Dev/prod parity      https://12factor.net/dev-prod-parity   
+# 11  XI. Logs                https://12factor.net/logs              
+# 12  XII. Admin processes    https://12factor.net/admin-processes
 ```
 
 ### Scrape time
@@ -73,14 +80,21 @@ papeer ls https://news.ycombinator.com/ --limit=5
 Once you are satisfied with the table of content listed by the `ls` command, you can actually scrape the content of those pages. You can use the same options that you specified for the `ls` command. In recursive mode, you also have the possibility to use `delay` and `threads` options.
 
 ```sh
-papeer get https://news.ycombinator.com/ --recursive --delay=500 --limit=5 --format=md
-# [========================================>---------------------------] Chapters 3 / 5
-# [====================================================================] 1. Tailwind CSS v3.0
-# [====================================================================] 2. A molten salt storage solution using sodium hydroxide
-# [====================================================================] 3. HashiCorp IPO today
-# [--------------------------------------------------------------------] 4. Stack Graphs
-# [--------------------------------------------------------------------] 5. ‘Tipping point’ makes partisan polarization irreversible
-# Markdown saved to "Hacker News.md"
+papeer get https://12factor.net/ --recursive -s 'section.concrete > article > h2 > a' --format=md
+# [======================================>-----------------------------] Chapters 7 / 12
+# [====================================================================] 1. I. Codebase
+# [====================================================================] 2. II. Dependencies
+# [====================================================================] 3. III. Config
+# [====================================================================] 4. IV. Backing services
+# [====================================================================] 5. V. Build, release, run
+# [====================================================================] 6. VI. Processes
+# [====================================================================] 7. VII. Port binding
+# [--------------------------------------------------------------------] 8. VIII. Concurrency
+# [--------------------------------------------------------------------] 9. IX. Disposability
+# [--------------------------------------------------------------------] 10. X. Dev/prod parity
+# [--------------------------------------------------------------------] 11. XI. Logs
+# [--------------------------------------------------------------------] 12. XII. Admin processes
+# Markdown saved to "The_Twelve-Factor_App.md"
 ```
 
 # Installation

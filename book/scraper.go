@@ -1,9 +1,12 @@
 package book
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"math"
+	"net/http"
 	urllib "net/url"
 	"strings"
 	"sync"
@@ -14,14 +17,33 @@ import (
 	colly "github.com/gocolly/colly/v2"
 )
 
-func NewBookFromURL(url, selector, name, author string, recursive, include bool, limit, offset, delay, threads int) book {
+type ScrapeConfig struct {
+	selector   string
+	limit      int
+	include    bool
+	imagesOnly bool
+}
+
+func NewScrapeConfig() *ScrapeConfig {
+	return &ScrapeConfig{"", -1, true, false}
+}
+
+func NewBookFromURL(url, selector, name, author string, recursive, include, imagesOnly bool, limit, offset, delay, threads int) book {
+	config1 := NewScrapeConfig()
+	config1.imagesOnly = imagesOnly
+
 	var chapters []chapter
 	var home chapter
 
 	if recursive {
-		chapters, home = tableOfContent(url, selector, limit, offset, delay, threads, include)
+		config2 := NewScrapeConfig()
+		config2.selector = selector
+		config2.limit = limit
+		config2.include = include
+		config2.imagesOnly = imagesOnly
+		chapters, home = tableOfContent(url, config1.selector, config1.limit, offset, delay, threads, config1.include)
 	} else {
-		chapters = []chapter{NewChapterFromURL(url)}
+		chapters = []chapter{NewChapterFromURL(url, []*ScrapeConfig{config1})}
 		home = chapters[0]
 	}
 
@@ -41,30 +63,82 @@ func NewBookFromURL(url, selector, name, author string, recursive, include bool,
 	return b
 }
 
-func NewChapterFromURL(url string) chapter {
-	article, err := readability.FromURL(url, 30*time.Second)
+func NewChapterFromURL(url string, configs []*ScrapeConfig) chapter {
+	config := configs[0]
+	content := ""
+
+	base, err := urllib.Parse(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	subchapters := []chapter{}
+	if len(configs) > 1 {
+		// add subchapters
+
+		links, _, err := GetLinks(base, config.selector, config.limit, 0, false)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, link := range links {
+			// and then use it to parse relative URLs
+			u, err := base.Parse(link.href)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			subchapters = append(subchapters, NewChapterFromURL(u.String(), configs[1:]))
+		}
+	}
+
+	// we want the metadata anyway
+
+	// get page body
+	response, err := http.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer response.Body.Close()
+
+	// duplicate response stream
+	readabilityReader := &bytes.Buffer{}
+	bodyReader := io.TeeReader(response.Body, readabilityReader)
+
+	// extract HTML body
+	body, err := io.ReadAll(bodyReader)
+
+	// extract content
+	article, err := readability.FromReader(readabilityReader, base)
 	if err != nil {
 		log.Fatalf("failed to parse %s, %v\n", url, err)
 	}
 
-	content := strings.ReplaceAll(article.Content, "\n", "")
+	// we don't care about the content if we do not include this level
 
-	// if images {
-	// 	// parse html content
-	// 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
+	if config.include {
+		content = article.Content
 
-	// 	// extract images only
-	// 	content = ""
-	// 	doc.Find("img").Each(func(i int, s *goquery.Selection) {
-	// 		newContent, _ := goquery.OuterHtml(s)
-	// 		content += newContent
-	// 	})
-	// }
+		// extract images
+		if config.imagesOnly {
 
-	return chapter{article.Title, article.Byline, content}
+			// parse HTML
+			doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			// append every image to content
+			content = ""
+			doc.Find("img").Each(func(i int, s *goquery.Selection) {
+				imageTag, _ := goquery.OuterHtml(s)
+				content += imageTag
+			})
+
+		}
+	}
+
+	return chapter{string(body), article.Title, article.Byline, content, subchapters, config}
 }
 
 func tableOfContent(url, selector string, limit, offset, delay, threads int, include bool) ([]chapter, chapter) {
@@ -91,7 +165,7 @@ func tableOfContent(url, selector string, limit, offset, delay, threads int, inc
 				log.Fatal(err)
 			}
 
-			chapters[index] = NewChapterFromURL(u.String())
+			chapters[index] = NewChapterFromURL(u.String(), []*ScrapeConfig{NewScrapeConfig()})
 			progress.Incr(index)
 
 			// short sleep for last chapter to let the progress bar update
@@ -125,7 +199,7 @@ func tableOfContent(url, selector string, limit, offset, delay, threads int, inc
 					log.Fatal(err)
 				}
 
-				chapters[index] = NewChapterFromURL(u.String())
+				chapters[index] = NewChapterFromURL(u.String(), []*ScrapeConfig{NewScrapeConfig()})
 				progress.Incr(index)
 
 				<-semaphore
@@ -202,7 +276,7 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool)
 
 	links = links[offset:end]
 
-	home := NewChapterFromURL(url.String())
+	home := NewChapterFromURL(url.String(), []*ScrapeConfig{NewScrapeConfig()})
 
 	if include {
 		l := NewLink(url.String(), home.Name())

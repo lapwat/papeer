@@ -1,13 +1,20 @@
 package book
 
 type chapter struct {
-	name    string
-	author  string
-	content string
+	body        string
+	name        string
+	author      string
+	content     string
+	subChapters []chapter
+	config      *ScrapeConfig
 }
 
-func NewChapter(name, author, content string) chapter {
-	return chapter{name, author, content}
+func NewChapter(body, name, author, content string, subChapters []chapter, config *ScrapeConfig) chapter {
+	return chapter{body, name, author, content, subChapters, config}
+}
+
+func (c chapter) Body() string {
+	return c.body
 }
 
 func (c chapter) Name() string {
@@ -20,4 +27,8 @@ func (c chapter) Author() string {
 
 func (c chapter) Content() string {
 	return c.content
+}
+
+func (c chapter) SubChapters() []chapter {
+	return c.subChapters
 }

@@ -77,7 +77,7 @@ var getCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		url := args[0]
-		b := book.NewBookFromURL(url, selector, name, author, recursive, include, limit, offset, delay, threads)
+		b := book.NewBookFromURL(url, selector, name, author, recursive, include, images, limit, offset, delay, threads)
 
 		if len(output) == 0 {
 			// set default output
