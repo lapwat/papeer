@@ -1,8 +1,11 @@
-install:
-	go install
-
 format:
 	gofmt -s -w .
+
+test:
+	go test github.com/lapwat/papeer/book
+
+install:
+	go install
 
 clean:
 	find . -maxdepth 1 -not -name 'README.md' -name '*.md' -delete

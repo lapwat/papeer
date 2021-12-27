@@ -3,12 +3,23 @@ package book
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
 	"strings"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/PuerkitoBio/goquery"
 	epub "github.com/bmaupin/go-epub"
 )
+
+func Filename(name string) string {
+	filename := name
+
+	filename = strings.ReplaceAll(filename, " ", "_")
+	filename = strings.ReplaceAll(filename, "/", "")
+
+	return filename
+}
 
 func ToMarkdown(c chapter) string {
 
@@ -33,7 +44,7 @@ func ToMarkdown(c chapter) string {
 	return content
 }
 
-func ToEpub(c chapter, filename string) {
+func ToEpub(c chapter, filename string) string {
 	if len(filename) == 0 {
 		filename = fmt.Sprintf("%s.epub", c.Name())
 	}
@@ -50,6 +61,8 @@ func ToEpub(c chapter, filename string) {
 	}
 
 	fmt.Printf("Ebook saved to \"%s\"\n", filename)
+
+	return filename
 }
 
 func AppendToEpub(e *epub.Epub, c chapter, imagesOnly bool) {
@@ -87,4 +100,35 @@ func AppendToEpub(e *epub.Epub, c chapter, imagesOnly bool) {
 	for _, sc := range c.SubChapters() {
 		AppendToEpub(e, sc, false)
 	}
+}
+
+func ToMobi(c chapter, filename string) string {
+	if len(filename) == 0 {
+		filename = fmt.Sprintf("%s.mobi", c.Name())
+	} else {
+
+		// add .mobi extension if not specified
+		if strings.HasSuffix(filename, ".mobi") == false {
+			filename = fmt.Sprintf("%s.mobi", filename)
+		}
+
+	}
+
+	filenameEPUB := strings.ReplaceAll(filename, ".mobi", ".epub")
+	ToEpub(c, filenameEPUB)
+
+	exec.Command("kindlegen", filenameEPUB).Run()
+	// exec command always return status 1 even if it succeed
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	fmt.Printf("Ebook saved to \"%s\"\n", filename)
+
+	err := os.Remove(filenameEPUB)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	return filename
 }
