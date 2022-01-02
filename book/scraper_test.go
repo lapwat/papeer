@@ -153,7 +153,7 @@ func TestSubChaptersLimitOver(t *testing.T) {
 
 	config0 := NewScrapeConfig()
 	config0.limit = 3
-	
+
 	config1 := NewScrapeConfig()
 
 	c := NewChapterFromURL("https://books.lapw.at/", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})

@@ -22,89 +22,100 @@ func Filename(name string) string {
 }
 
 func ToMarkdown(c chapter) string {
+	markdown := ""
 
-	// make title
-	underline := strings.Repeat("=", len(c.Name()))
-	title := fmt.Sprintf("%s\n%s", c.Name(), underline)
+	if c.config.include {
+		// title
+		markdown += fmt.Sprintf("%s\n", c.Name())
+		markdown += fmt.Sprintf("%s\n\n", strings.Repeat("=", len(c.Name())))
 
-	// convert content to markdown
-	content, err := md.NewConverter("", true, nil).ConvertString(c.Content())
-	if err != nil {
-		log.Fatal(err)
+		// convert content to markdown
+		content, err := md.NewConverter("", true, nil).ConvertString(c.Content())
+		if err != nil {
+			log.Fatal(err)
+		}
+		markdown += fmt.Sprintf("%s\n\n\n", content)
 	}
-
-	// merge title and content
-	content = fmt.Sprintf("%s\n\n%s", title, content)
 
 	for _, sc := range c.SubChapters() {
-		// merge subchapters
-		content = fmt.Sprintf("%s\n\n\n%s", content, ToMarkdown(sc))
+		// subchapters content
+		markdown += fmt.Sprintf("%s\n\n\n", ToMarkdown(sc))
 	}
 
-	return content
+	return markdown
 }
 
 func ToEpub(c chapter, filename string) string {
 	if len(filename) == 0 {
-		filename = fmt.Sprintf("%s.epub", c.Name())
+		filename = fmt.Sprintf("%s.epub", Filename(c.Name()))
 	}
 
 	// init ebook
 	e := epub.NewEpub(c.Name())
 	e.SetAuthor(c.Author())
 
-	AppendToEpub(e, c, false)
+	AppendToEpub(e, c)
 
 	err := e.Write(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Ebook saved to \"%s\"\n", filename)
-
 	return filename
 }
 
-func AppendToEpub(e *epub.Epub, c chapter, imagesOnly bool) {
+func AppendToEpub(e *epub.Epub, c chapter) {
 	content := ""
 
-	if imagesOnly == false {
-		content = c.Content()
-	}
+	if c.config.include {
 
-	// parse content
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(c.Content()))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// download images and replace src in img tags of content
-	doc.Find("img").Each(func(i int, s *goquery.Selection) {
-		src, _ := s.Attr("src")
-		imagePath, _ := e.AddImage(src, "")
-
-		if imagesOnly {
-			imageTag, _ := goquery.OuterHtml(s)
-			content += strings.Replace(imageTag, src, imagePath, 1)
-		} else {
-			content = strings.Replace(content, src, imagePath, 1)
+		if c.config.imagesOnly == false {
+			content = c.Content()
 		}
-	})
 
-	html := fmt.Sprintf("<h1>%s</h1>%s", c.Name(), content)
-	_, err = e.AddSection(html, c.Name(), "", "")
-	if err != nil {
-		log.Fatal(err)
+		// parse content
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(c.Content()))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// download images and replace src in img tags of content
+		doc.Find("img").Each(func(i int, s *goquery.Selection) {
+			src, _ := s.Attr("src")
+			src = strings.Split(src, "?")[0] // remove query part
+			imagePath, _ := e.AddImage(src, "")
+
+			if c.config.imagesOnly {
+				imageTag, _ := goquery.OuterHtml(s)
+				content += strings.Replace(imageTag, src, imagePath, 1)
+			} else {
+				content = strings.Replace(content, src, imagePath, 1)
+			}
+		})
+
+		html := ""
+		// add title only if imagesOnly = false
+		if c.config.imagesOnly == false {
+			html += fmt.Sprintf("<h1>%s</h1>", c.Name())
+		}
+		html += content
+
+		//  write to epub file
+		_, err = e.AddSection(html, c.Name(), "", "")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	}
 
 	for _, sc := range c.SubChapters() {
-		AppendToEpub(e, sc, false)
+		AppendToEpub(e, sc)
 	}
 }
 
 func ToMobi(c chapter, filename string) string {
 	if len(filename) == 0 {
-		filename = fmt.Sprintf("%s.mobi", c.Name())
+		filename = fmt.Sprintf("%s.mobi", Filename(c.Name()))
 	} else {
 
 		// add .mobi extension if not specified
@@ -123,12 +134,10 @@ func ToMobi(c chapter, filename string) string {
 	// 	log.Fatal(err)
 	// }
 
-	fmt.Printf("Ebook saved to \"%s\"\n", filename)
-
 	err := os.Remove(filenameEPUB)
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	return filename
 }

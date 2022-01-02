@@ -69,6 +69,13 @@ func NewScrapeConfigsWikipedia() []*ScrapeConfig {
 	return []*ScrapeConfig{config0, config1}
 }
 
+func NewScrapeConfigFake() *ScrapeConfig {
+	config := NewScrapeConfig()
+	config.include = false
+
+	return config
+}
+
 func NewBookFromURL(url, selector, name, author string, recursive, include, imagesOnly bool, limit, offset, delay, threads int) book {
 	config1 := NewScrapeConfig()
 	config1.imagesOnly = imagesOnly
@@ -85,7 +92,7 @@ func NewBookFromURL(url, selector, name, author string, recursive, include, imag
 		config2.threads = threads
 		config2.include = include
 		config2.imagesOnly = imagesOnly
-		chapters, home = tableOfContent(url, config2)
+		chapters, home = tableOfContent(url, config2, config1)
 	} else {
 		chapters = []chapter{NewChapterFromURL(url, []*ScrapeConfig{config1}, 0, func(index int, name string) {})}
 		home = chapters[0]
@@ -136,7 +143,7 @@ func NewChapterFromURL(url string, configs []*ScrapeConfig, index int, updatePro
 	}
 	name := article.Title
 
-	// notify progress bar
+	// notify progress bar with new name
 	updateProgressBarName(index, name)
 
 	subchapters := []chapter{}
@@ -222,6 +229,8 @@ func NewChapterFromURL(url string, configs []*ScrapeConfig, index int, updatePro
 			content = ""
 			doc.Find("img").Each(func(i int, s *goquery.Selection) {
 				imageTag, _ := goquery.OuterHtml(s)
+				imageTag = strings.ReplaceAll(imageTag, "\n", "")
+
 				content += imageTag
 			})
 
@@ -231,7 +240,7 @@ func NewChapterFromURL(url string, configs []*ScrapeConfig, index int, updatePro
 	return chapter{string(body), name, article.Byline, content, subchapters, config}
 }
 
-func tableOfContent(url string, config *ScrapeConfig) ([]chapter, chapter) {
+func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig) ([]chapter, chapter) {
 	base, err := urllib.Parse(url)
 	if err != nil {
 		log.Fatal(err)
@@ -243,7 +252,7 @@ func tableOfContent(url string, config *ScrapeConfig) ([]chapter, chapter) {
 	}
 
 	chapters := make([]chapter, len(links))
-	progress := NewProgress(links, "", 0)
+	// progress := NewProgress(links, "", 0)
 	delay := config.delay
 
 	if delay >= 0 {
@@ -256,9 +265,9 @@ func tableOfContent(url string, config *ScrapeConfig) ([]chapter, chapter) {
 				log.Fatal(err)
 			}
 
-			sc := NewChapterFromURL(u.String(), []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+			sc := NewChapterFromURL(u.String(), []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
 			chapters[index] = sc
-			progress.Increment(index)
+			// progress.Increment(index)
 
 			// short sleep for last chapter to let the progress bar update
 			if index == len(links)-1 {
@@ -292,9 +301,9 @@ func tableOfContent(url string, config *ScrapeConfig) ([]chapter, chapter) {
 					log.Fatal(err)
 				}
 
-				sc := NewChapterFromURL(u.String(), []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+				sc := NewChapterFromURL(u.String(), []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
 				chapters[index] = sc
-				progress.Increment(index)
+				// progress.Increment(index)
 
 				<-semaphore
 			}(index, l)

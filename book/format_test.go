@@ -22,12 +22,12 @@ func TestToMarkdown(t *testing.T) {
 	c := NewChapterFromURL("https://books.lapw.at/", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
 
 	got := ToMarkdown(c)
-	want := "Books\n=====\n\n- [Discours de la Méthode](https://books.lapw.at/posts/ren%C3%A9-descartes-discours-de-la-m%C3%A9thode/)clock 98 min read -\n1637\n\n- [The Twelve-Factor App](https://books.lapw.at/posts/adam-wiggins-the-twelve-factor-app/)clock 22 min read -\n2011"
+	want := "Books\n=====\n\n- [Discours de la Méthode](https://books.lapw.at/posts/ren%C3%A9-descartes-discours-de-la-m%C3%A9thode/)clock 98 min read -\n1637\n\n- [The Twelve-Factor App](https://books.lapw.at/posts/adam-wiggins-the-twelve-factor-app/)clock 22 min read -\n2011\n\n\n"
 
 	if got != want {
 		t.Errorf("got %q, wanted %q", got, want)
 	}
-	
+
 }
 
 func TestToEpub(t *testing.T) {
@@ -43,7 +43,7 @@ func TestToEpub(t *testing.T) {
 			t.Errorf("cannot remove %v: %v", filename, err)
 		}
 	}
-	
+
 }
 
 func TestToEpubFilename(t *testing.T) {
@@ -59,7 +59,7 @@ func TestToEpubFilename(t *testing.T) {
 			t.Errorf("cannot remove %v: %v", filename, err)
 		}
 	}
-	
+
 }
 
 func TestToMobi(t *testing.T) {
@@ -75,5 +75,5 @@ func TestToMobi(t *testing.T) {
 			t.Errorf("cannot remove %v: %v", filename, err)
 		}
 	}
-	
+
 }
