@@ -29,6 +29,7 @@ Flags:
   -n, --name string       book name (default: page title)
   -o, --offset int        skip first chapters, in recursive mode
       --output string     file name (default: book name)
+  -q, --quiet             hide progress bar
   -r, --recursive         create one chapter per natigation item
   -s, --selector string   table of content CSS selector, in resursive mode
   -t, --threads int       download concurrency, in recursive mode (default -1)
@@ -111,7 +112,7 @@ go get -u github.com/lapwat/papeer
 
 ```sh
 platform=linux # use platform=darwin for MacOS
-release=0.3.2
+release=0.3.3
 curl -L https://github.com/lapwat/papeer/releases/download/v$release/papeer-v$release-$platform-amd64 > papeer
 chmod +x papeer
 sudo mv papeer /usr/local/bin
@@ -119,7 +120,7 @@ sudo mv papeer /usr/local/bin
 
 ### On Windows
 
-Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.3.2/papeer-v0.3.2-windows-amd64.exe).
+Download [latest release](https://github.com/lapwat/papeer/releases/download/3/papeer-v0.3.3-windows-amd64.exe).
 
 ## Install kindlegen to export websites to MOBI (optional)
 

@@ -76,7 +76,7 @@ func NewScrapeConfigFake() *ScrapeConfig {
 	return config
 }
 
-func NewBookFromURL(url, selector, name, author string, recursive, include, imagesOnly bool, limit, offset, delay, threads int) book {
+func NewBookFromURL(url, selector, name, author string, recursive, include, imagesOnly, quiet bool, limit, offset, delay, threads int) book {
 	config1 := NewScrapeConfig()
 	config1.imagesOnly = imagesOnly
 
@@ -92,7 +92,7 @@ func NewBookFromURL(url, selector, name, author string, recursive, include, imag
 		config2.threads = threads
 		config2.include = include
 		config2.imagesOnly = imagesOnly
-		chapters, home = tableOfContent(url, config2, config1)
+		chapters, home = tableOfContent(url, config2, config1, quiet)
 	} else {
 		chapters = []chapter{NewChapterFromURL(url, []*ScrapeConfig{config1}, 0, func(index int, name string) {})}
 		home = chapters[0]
@@ -240,7 +240,7 @@ func NewChapterFromURL(url string, configs []*ScrapeConfig, index int, updatePro
 	return chapter{string(body), name, article.Byline, content, subchapters, config}
 }
 
-func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig) ([]chapter, chapter) {
+func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig, quiet bool) ([]chapter, chapter) {
 	base, err := urllib.Parse(url)
 	if err != nil {
 		log.Fatal(err)
@@ -252,8 +252,12 @@ func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig) (
 	}
 
 	chapters := make([]chapter, len(links))
-	// progress := NewProgress(links, "", 0)
 	delay := config.delay
+
+	var p progress
+	if quiet == false {
+		p = NewProgress(links, "", 0)
+	}
 
 	if delay >= 0 {
 		// synchronous mode
@@ -265,9 +269,11 @@ func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig) (
 				log.Fatal(err)
 			}
 
-			sc := NewChapterFromURL(u.String(), []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
-			chapters[index] = sc
-			// progress.Increment(index)
+			chapters[index] = NewChapterFromURL(u.String(), []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
+			
+			if quiet == false {
+				p.Increment(index)
+			}
 
 			// short sleep for last chapter to let the progress bar update
 			if index == len(links)-1 {
@@ -301,9 +307,11 @@ func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig) (
 					log.Fatal(err)
 				}
 
-				sc := NewChapterFromURL(u.String(), []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
-				chapters[index] = sc
-				// progress.Increment(index)
+				chapters[index] = NewChapterFromURL(u.String(), []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
+
+				if quiet == false {
+					p.Increment(index)
+				}
 
 				<-semaphore
 			}(index, l)

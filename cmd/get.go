@@ -73,7 +73,7 @@ var getCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		url := args[0]
-		b := book.NewBookFromURL(url, selector, name, author, recursive, include, images, limit, offset, delay, threads)
+		b := book.NewBookFromURL(url, selector, name, author, recursive, include, images, quiet, limit, offset, delay, threads)
 
 		fakeConfig := book.NewScrapeConfigFake()
 		fakeChapter := book.NewChapter("", b.Name(), b.Author(), "", b.Chapters(), fakeConfig)
