@@ -120,7 +120,7 @@ sudo mv papeer /usr/local/bin
 
 ### On Windows
 
-Download [latest release](https://github.com/lapwat/papeer/releases/download/3/papeer-v0.3.3-windows-amd64.exe).
+Download [latest release](https://github.com/lapwat/papeer/releases/download/0.3.3/papeer-v0.3.3-windows-amd64.exe).
 
 ## Install kindlegen to export websites to MOBI (optional)
 
