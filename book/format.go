@@ -21,10 +21,10 @@ func Filename(name string) string {
 	return filename
 }
 
-func ToMarkdown(c chapter) string {
+func ToMarkdownString(c chapter) string {
 	markdown := ""
 
-	if c.config.include {
+	if c.config.Include {
 		// title
 		markdown += fmt.Sprintf("%s\n", c.Name())
 		markdown += fmt.Sprintf("%s\n\n", strings.Repeat("=", len(c.Name())))
@@ -39,10 +39,31 @@ func ToMarkdown(c chapter) string {
 
 	for _, sc := range c.SubChapters() {
 		// subchapters content
-		markdown += fmt.Sprintf("%s\n\n\n", ToMarkdown(sc))
+		markdown += fmt.Sprintf("%s\n\n\n", ToMarkdownString(sc))
 	}
 
 	return markdown
+}
+
+func ToMarkdown(c chapter, filename string) string {
+	if len(filename) == 0 {
+		filename = fmt.Sprintf("%s.md", Filename(c.Name()))
+	}
+
+	markdown := ToMarkdownString(c)
+
+	// write to file
+	f, err := os.Create(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err2 := f.WriteString(markdown)
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+	f.Close()
+
+	return filename
 }
 
 func ToEpub(c chapter, filename string) string {
@@ -67,9 +88,9 @@ func ToEpub(c chapter, filename string) string {
 func AppendToEpub(e *epub.Epub, c chapter) {
 	content := ""
 
-	if c.config.include {
+	if c.config.Include {
 
-		if c.config.imagesOnly == false {
+		if c.config.ImagesOnly == false {
 			content = c.Content()
 		}
 
@@ -85,7 +106,7 @@ func AppendToEpub(e *epub.Epub, c chapter) {
 			src = strings.Split(src, "?")[0] // remove query part
 			imagePath, _ := e.AddImage(src, "")
 
-			if c.config.imagesOnly {
+			if c.config.ImagesOnly {
 				imageTag, _ := goquery.OuterHtml(s)
 				content += strings.Replace(imageTag, src, imagePath, 1)
 			} else {
@@ -94,8 +115,8 @@ func AppendToEpub(e *epub.Epub, c chapter) {
 		})
 
 		html := ""
-		// add title only if imagesOnly = false
-		if c.config.imagesOnly == false {
+		// add title only if ImagesOnly = false
+		if c.config.ImagesOnly == false {
 			html += fmt.Sprintf("<h1>%s</h1>", c.Name())
 		}
 		html += content

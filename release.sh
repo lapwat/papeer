@@ -18,10 +18,17 @@ do
     if [ $GOOS = "windows" ]; then
         output_name+='.exe'
     fi
-
+    
     env GOOS=$GOOS GOARCH=$GOARCH go build -o $output_name
     if [ $? -ne 0 ]; then
         echo 'An error has occurred! Aborting the script execution...'
         exit 1
     fi
+
+    if [ $GOOS = "windows" ]; then
+        zip "$output_name.exe.zip" "$output_name"
+    else
+        tar czvf "$output_name.tar.gz" "$output_name"
+    fi
+    rm "$output_name"
 done

@@ -21,22 +21,3 @@ func Execute() {
 		os.Exit(1)
 	}
 }
-
-func init() {
-	rootCmd.PersistentFlags().StringVarP(&name, "name", "n", "", "book name (default: page title)")
-	rootCmd.PersistentFlags().StringVarP(&author, "author", "a", "", "book author")
-	rootCmd.PersistentFlags().StringVarP(&format, "format", "f", "stdout", "file format [stdout, md, epub, mobi]")
-	rootCmd.PersistentFlags().StringVarP(&output, "output", "", "", "file name (default: book name)")
-	rootCmd.PersistentFlags().StringVarP(&selector, "selector", "s", "", "table of content CSS selector, in resursive mode")
-	rootCmd.PersistentFlags().BoolVarP(&recursive, "recursive", "r", false, "create one chapter per natigation item")
-	rootCmd.PersistentFlags().BoolVarP(&include, "include", "i", false, "include URL as first chapter, in resursive mode")
-	rootCmd.PersistentFlags().BoolVarP(&images, "images", "", false, "retrieve images only")
-	rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "hide progress bar")
-	rootCmd.PersistentFlags().IntVarP(&limit, "limit", "l", -1, "limit number of chapters, in recursive mode")
-	rootCmd.PersistentFlags().IntVarP(&offset, "offset", "o", 0, "skip first chapters, in recursive mode")
-	rootCmd.PersistentFlags().IntVarP(&delay, "delay", "d", -1, "time to wait before downloading next chapter, in milliseconds")
-	rootCmd.PersistentFlags().IntVarP(&threads, "threads", "t", -1, "download concurrency, in recursive mode")
-
-	rootCmd.AddCommand(getCmd)
-	rootCmd.AddCommand(listCmd)
-}

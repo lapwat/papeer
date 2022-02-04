@@ -18,83 +18,100 @@ import (
 )
 
 type ScrapeConfig struct {
-	depth      int
-	selector   string
-	limit      int
-	offset     int
-	delay      int
-	threads    int
-	include    bool
-	imagesOnly bool
+	Depth       int
+	Selector    string
+	Quiet       bool
+	Limit       int
+	Offset      int
+	Delay       int
+	Threads     int
+	Include     bool
+	ImagesOnly  bool
+	UseLinkName bool
 }
 
 func NewScrapeConfig() *ScrapeConfig {
-	return &ScrapeConfig{0, "", -1, 0, -1, -1, true, false}
+	return &ScrapeConfig{0, "", false, -1, 0, -1, -1, true, false, false}
+}
+
+func NewScrapeConfigs(selectors []string) []*ScrapeConfig {
+	configs := []*ScrapeConfig{}
+
+	for _, s := range selectors {
+		config := NewScrapeConfig()
+		config.Selector = s
+
+		configs = append(configs, config)
+	}
+
+	return configs
 }
 
 func NewScrapeConfigsAjin() []*ScrapeConfig {
 	config0 := NewScrapeConfig()
-	config0.depth = 0
-	config0.selector = ".dt>a"
-	config0.limit = 3
-	config0.offset = 0
-	config0.delay = 5000
-	config0.include = false
+	config0.Depth = 0
+	config0.Selector = ".dt>a"
+	config0.Limit = 3
+	config0.Offset = 0
+	config0.Delay = 5000
+	config0.Include = false
 
 	config1 := NewScrapeConfig()
-	config1.depth = 1
-	config1.selector = ".nav_apb>a"
-	config1.limit = 3
-	config1.offset = 1
-	config1.delay = 5000
-	config1.include = false
+	config1.Depth = 1
+	config1.Selector = ".nav_apb>a"
+	config1.Limit = 3
+	config1.Offset = 1
+	config1.Delay = 5000
+	config1.Include = false
 
 	config2 := NewScrapeConfig()
-	config2.depth = 2
-	config2.imagesOnly = true
+	config2.Depth = 2
+	config2.ImagesOnly = true
 
 	return []*ScrapeConfig{config0, config1, config2}
 }
 
 func NewScrapeConfigsWikipedia() []*ScrapeConfig {
 	config0 := NewScrapeConfig()
-	config0.depth = 0
-	config0.threads = -1
-	config0.include = true
+	config0.Depth = 0
+	config0.Threads = -1
+	config0.Include = true
 
 	config1 := NewScrapeConfig()
-	config1.depth = 1
-	config1.include = true
+	config1.Depth = 1
+	config1.Include = true
 
 	return []*ScrapeConfig{config0, config1}
 }
 
 func NewScrapeConfigFake() *ScrapeConfig {
 	config := NewScrapeConfig()
-	config.include = false
+	config.Include = false
 
 	return config
 }
 
-func NewBookFromURL(url, selector, name, author string, recursive, include, imagesOnly, quiet bool, limit, offset, delay, threads int) book {
+func NewBookFromURL(url string, selector []string, name, author string, include, ImagesOnly, useLinkName, quiet bool, limit, offset, delay, threads int) book {
 	config1 := NewScrapeConfig()
-	config1.imagesOnly = imagesOnly
+	config1.ImagesOnly = ImagesOnly
+	config1.UseLinkName = useLinkName
 
 	var chapters []chapter
 	var home chapter
 
-	if recursive {
+	if len(selector) > 0 {
 		config2 := NewScrapeConfig()
-		config2.selector = selector
-		config2.limit = limit
-		config2.offset = offset
-		config2.delay = delay
-		config2.threads = threads
-		config2.include = include
-		config2.imagesOnly = imagesOnly
+		config2.Selector = selector[0]
+		config2.Limit = limit
+		config2.Offset = offset
+		config2.Delay = delay
+		config2.Threads = threads
+		config2.Include = include
+		config2.ImagesOnly = ImagesOnly
+		config2.UseLinkName = useLinkName
 		chapters, home = tableOfContent(url, config2, config1, quiet)
 	} else {
-		chapters = []chapter{NewChapterFromURL(url, []*ScrapeConfig{config1}, 0, func(index int, name string) {})}
+		chapters = []chapter{NewChapterFromURL(url, "", []*ScrapeConfig{config1}, 0, func(index int, name string) {})}
 		home = chapters[0]
 	}
 
@@ -114,7 +131,7 @@ func NewBookFromURL(url, selector, name, author string, recursive, include, imag
 	return b
 }
 
-func NewChapterFromURL(url string, configs []*ScrapeConfig, index int, updateProgressBarName func(index int, name string)) chapter {
+func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int, updateProgressBarName func(index int, name string)) chapter {
 	config := configs[0]
 
 	base, err := urllib.Parse(url)
@@ -141,24 +158,31 @@ func NewChapterFromURL(url string, configs []*ScrapeConfig, index int, updatePro
 	if err != nil {
 		log.Fatalf("failed to parse %s, %v\n", url, err)
 	}
-	name := article.Title
 
-	// notify progress bar with new name
-	updateProgressBarName(index, name)
+	name := linkName
+	if config.UseLinkName == false {
+		name = article.Title
+
+		// notify progressbar with new name
+		updateProgressBarName(index, name)
+	}
 
 	subchapters := []chapter{}
 	if len(configs) > 1 {
 		// add subchapters
 
-		links, _, err := GetLinks(base, config.selector, config.limit, config.offset, false)
+		links, _, _, err := GetLinks(base, config.Selector, config.Limit, config.Offset, false)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		subchapters = make([]chapter, len(links))
-		progress := NewProgress(links, name, config.depth)
+		var p progress
+		if config.Quiet == false {
+			p = NewProgress(links, name, config.Depth)
+		}
 
-		if config.delay >= 0 {
+		if config.Delay >= 0 {
 
 			// synchronous mode
 			for index, link := range links {
@@ -168,18 +192,20 @@ func NewChapterFromURL(url string, configs []*ScrapeConfig, index int, updatePro
 					log.Fatal(err)
 				}
 
-				sc := NewChapterFromURL(u.String(), configs[1:], index, progress.UpdateName)
+				sc := NewChapterFromURL(u.String(), link.text, configs[1:], index, p.UpdateName)
 				subchapters[index] = sc
-				progress.Increment(index)
+				if config.Quiet == false {
+					p.Increment(index)
+				}
 
-				time.Sleep(time.Duration(config.delay) * time.Millisecond)
+				time.Sleep(time.Duration(config.Delay) * time.Millisecond)
 			}
 
 		} else {
 			// asynchronous mode
 			var wg sync.WaitGroup
 
-			threads := config.threads
+			threads := config.Threads
 			if threads == -1 {
 				threads = len(links)
 			}
@@ -199,9 +225,12 @@ func NewChapterFromURL(url string, configs []*ScrapeConfig, index int, updatePro
 						log.Fatal(err)
 					}
 
-					sc := NewChapterFromURL(u.String(), configs[1:], index, progress.UpdateName)
+					sc := NewChapterFromURL(u.String(), l.text, configs[1:], index, p.UpdateName)
 					subchapters[index] = sc
-					progress.Increment(index)
+
+					if config.Quiet == false {
+						p.Increment(index)
+					}
 
 					<-semaphore
 				}(index, l)
@@ -211,13 +240,15 @@ func NewChapterFromURL(url string, configs []*ScrapeConfig, index int, updatePro
 	}
 
 	content := ""
-	if config.include {
+	if config.Include {
 
-		// we care about the content only if we include this level
+		// we care about the content only if:
+		// - we include this level
+		// - we use the page name
 		content = article.Content
 
 		// extract images
-		if config.imagesOnly {
+		if config.ImagesOnly {
 
 			// parse HTML
 			doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
@@ -246,13 +277,13 @@ func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig, q
 		log.Fatal(err)
 	}
 
-	links, home, err := GetLinks(base, config.selector, config.limit, config.offset, config.include)
+	links, _, home, err := GetLinks(base, config.Selector, config.Limit, config.Offset, config.Include)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	chapters := make([]chapter, len(links))
-	delay := config.delay
+	delay := config.Delay
 
 	var p progress
 	if quiet == false {
@@ -262,15 +293,15 @@ func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig, q
 	if delay >= 0 {
 		// synchronous mode
 
-		for index, link := range links {
+		for index, l := range links {
 			// and then use it to parse relative URLs
-			u, err := base.Parse(link.href)
+			u, err := base.Parse(l.href)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			chapters[index] = NewChapterFromURL(u.String(), []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
-			
+			chapters[index] = NewChapterFromURL(u.String(), l.text, []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
+
 			if quiet == false {
 				p.Increment(index)
 			}
@@ -287,7 +318,7 @@ func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig, q
 		// asynchronous mode
 		var wg sync.WaitGroup
 
-		threads := config.threads
+		threads := config.Threads
 		if threads == -1 {
 			threads = len(links)
 		}
@@ -307,7 +338,7 @@ func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig, q
 					log.Fatal(err)
 				}
 
-				chapters[index] = NewChapterFromURL(u.String(), []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
+				chapters[index] = NewChapterFromURL(u.String(), l.text, []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
 
 				if quiet == false {
 					p.Increment(index)
@@ -327,7 +358,7 @@ func GetPath(elm *goquery.Selection) string {
 
 	for {
 		selector := strings.ToLower(goquery.NodeName(elm))
-		if selector == "" {
+		if len(selector) == 0 {
 			break
 		}
 
@@ -339,18 +370,18 @@ func GetPath(elm *goquery.Selection) string {
 	return join
 }
 
-func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool) ([]link, chapter, error) {
+func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool) ([]link, string, chapter, error) {
 	selectorSet := true
-	if selector == "" {
+	if len(selector) == 0 {
 		selector = "a"
 		selectorSet = false
 	}
 
-	// visit and count link classes
 	pathLinks := map[string][]link{}
 	pathCount := map[string]int{}
 	pathMax := ""
 
+	// visit and count link classes
 	c := colly.NewCollector()
 	c.OnHTML(selector, func(e *colly.HTMLElement) {
 		href := e.Attr("href")
@@ -358,26 +389,40 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool)
 		path := GetPath(e.DOM)
 		key := path
 
-		// include element class in key if selector is set
-		if !selectorSet {
-			class := e.Attr("class")
-			key = fmt.Sprintf("%s.%s", path, class)
-		}
+		if selectorSet {
 
-		if selectorSet || text != "" {
+			// if selector is set, we use the selector specified by the user
+
+			key = selector
 			pathLinks[key] = append(pathLinks[key], NewLink(href, text))
-			pathCount[key] += len(text)
+			pathCount[key] += 1
+			pathMax = key
 
-			if pathCount[key] > pathCount[pathMax] {
-				pathMax = key
+		} else {
+
+			// if selector is not set, we compute the selector ourselves
+
+			class := e.Attr("class")
+			// include the element class to make sure we have the same exact path for every link in the table of content
+			key = fmt.Sprintf("%s.%s", path, class)
+
+			// we count this key if the link text is not empty
+			if text != "" {
+				pathLinks[key] = append(pathLinks[key], NewLink(href, text))
+				pathCount[key] += len(text)
+
+				if pathCount[key] > pathCount[pathMax] {
+					pathMax = key
+				}
 			}
+
 		}
 	})
 	c.Visit(url.String())
 
 	links := pathLinks[pathMax]
 	if len(links) == 0 {
-		return []link{}, chapter{}, fmt.Errorf("no link found for selector: %s", selector)
+		return []link{}, pathMax, chapter{}, fmt.Errorf("no link found for selector: %s", selector)
 	}
 
 	end := len(links)
@@ -387,12 +432,12 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool)
 
 	links = links[offset:end]
 
-	home := NewChapterFromURL(url.String(), []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+	home := NewChapterFromURL(url.String(), "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
 
 	if include {
 		l := NewLink(url.String(), home.Name())
 		links = append([]link{l}, links...)
 	}
 
-	return links, home, nil
+	return links, pathMax, home, nil
 }
