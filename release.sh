@@ -14,21 +14,20 @@ do
     platform_split=(${platform//\// })
     GOOS=${platform_split[0]}
     GOARCH=${platform_split[1]}
-    output_name='papeer-v'$version'-'$GOOS'-'$GOARCH
-    if [ $GOOS = "windows" ]; then
-        output_name+='.exe'
-    fi
-    
-    env GOOS=$GOOS GOARCH=$GOARCH go build -o $output_name
-    if [ $? -ne 0 ]; then
-        echo 'An error has occurred! Aborting the script execution...'
-        exit 1
-    fi
+    output_name=papeer
 
     if [ $GOOS = "windows" ]; then
-        zip "$output_name.exe.zip" "$output_name"
+        env GOOS=$GOOS GOARCH=$GOARCH go build -o "$output_name.exe"
+        zip "$output_name-v$version-$GOOS-$GOARCH.exe.zip" "$output_name.exe"
+        rm "$output_name.exe"
     else
-        tar czvf "$output_name.tar.gz" "$output_name"
+        env GOOS=$GOOS GOARCH=$GOARCH go build -o "$output_name"
+        tar czvf "$output_name-v$version-$GOOS-$GOARCH.tar.gz" "$output_name"
+        rm "$output_name"
     fi
-    rm "$output_name"
+
+    # if [ $? -ne 0 ]; then
+    #     echo 'An error has occurred! Aborting the script execution...'
+    #     exit 1
+    # fi
 done

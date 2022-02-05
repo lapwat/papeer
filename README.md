@@ -1,23 +1,22 @@
 # Papeer
 
-Papeer is a powerful an **ereader internet vacuum**. It can scrape any website, removing ads and keeping only the relevant content (formatted text and images). You can export the content to Markdown, EPUB or MOBI files.
+Papeer is a powerful **ereader internet vacuum**. It can scrape any website, removing ads and keeping only the relevant content (formatted text and images). You can export the content to Markdown, EPUB or MOBI files.
 
 # Table of contents
 
 - [Usage](#usage)
-- [Examples](#examples)
-  * [Grab a single page](#grab-a-single-page)
-  * [Grab several pages](#grab-several-pages)
-    + [`selector` option](#-selector--option)
+  * [Scrape a web page](#scrape-a-web-page)
+  * [Scrape a whole website](#scrape-a-whole-website)
     + [`depth` option](#-depth--option)
-    + [Display table of contents](#display-table-of-contents)
+    + [`selector` option](#-selector--option)
+    + [Display the table of contents](#display-the-table-of-contents)
     + [Scrape time](#scrape-time)
 - [Installation](#installation)
   * [From source](#from-source)
   * [From binary](#from-binary)
     + [Linux / MacOS](#linux---macos)
     + [Windows](#windows)
-  * [MOBI support (optional)](#mobi-support--optional-)
+  * [MOBI support](#mobi-support)
 - [Autocompletion](#autocompletion)
 - [Dependencies](#dependencies)
 
@@ -64,9 +63,9 @@ You can activate this mode by using the `depth` or `selector` options.
 
 This option defaults to 0, `papeer` will grab only the main page.
 
-If you specify a value greater than 0, `papeer` will grab only the pages as deep as the value you specify.
+If you specify a value greater than 0, `papeer` will grab pages as deep as the value you specify.
 
-> Using `include` option will include all intermediary levels.
+> Using `include` option will include all intermediary levels into the book.
 
 ### `selector` option
 
@@ -76,7 +75,7 @@ If this option is specified, `papeer` will select the links (a HTML tag) present
 
 You can chain this option to grab several level of pages with diferent selectors for each level.
 
-## Display the table of contents
+### Display the table of contents
 
 Before actually scraping a whole website, it is a good idea to use the `list` command. This command is like a **dry run**, which lets you vizualize the content before actually retrieving it. You can use several options to customize the table of contents extraction, such as `selector`, `limit`, `offset` and `include`. Type `papeer list --help` for more information about those options.
 
@@ -146,15 +145,14 @@ tar xzvf papeer.tar.gz
 rm papeer.tar.gz
 
 # move to user binaries
-chmod +x papeer
 sudo mv papeer /usr/local/bin
 ```
 
 ### Windows
 
-Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.4.0/papeer-v0.4.0-windows-amd64.exe).
+Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.4.0/papeer-v0.4.0-windows-amd64.exe.zip).
 
-##  (optional) MOBI support
+## MOBI support
 
 Install kindlegen to convert websites, Linux only
 
