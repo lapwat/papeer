@@ -104,6 +104,10 @@ var getCmd = &cobra.Command{
 			return errors.New("cannot use threads option if depth/selector is not specified")
 		}
 
+		if cmd.Flags().Changed("use-link-name") && getOpts.depth == 0 && len(getOpts.Selector) == 0 {
+			return errors.New("cannot use use-link-name option if depth/selector is not specified")
+		}
+
 		if cmd.Flags().Changed("delay") && cmd.Flags().Changed("threads") {
 			return errors.New("cannot use delay and threads options at the same time")
 		}
@@ -114,9 +118,11 @@ var getCmd = &cobra.Command{
 		url := args[0]
 
 		// fill selector array with empty selectors to match depth
-		for len(getOpts.Selector) < getOpts.depth+2 {
+		getOpts.Selector = append(getOpts.Selector, "")
+		for len(getOpts.Selector) < getOpts.depth+1 {
 			getOpts.Selector = append(getOpts.Selector, "")
 		}
+		fmt.Println(len(getOpts.Selector))
 
 		// generate config for each level
 		configs := make([]*book.ScrapeConfig, len(getOpts.Selector))
