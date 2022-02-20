@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-version=$1
-platforms=("linux/amd64" "darwin/amd64" "windows/amd64")
-
 if [ "$#" -ne 1 ]; then
     echo "Illegal number of parameters"
     echo "Usage: ./release.sh X.X.X"
     exit 1
 fi
+
+version=$1
+platforms=("linux/amd64" "darwin/amd64" "windows/amd64")
 
 for platform in "${platforms[@]}"
 do
@@ -25,9 +25,4 @@ do
         tar czvf "$output_name-v$version-$GOOS-$GOARCH.tar.gz" "$output_name"
         rm "$output_name"
     fi
-
-    # if [ $? -ne 0 ]; then
-    #     echo 'An error has occurred! Aborting the script execution...'
-    #     exit 1
-    # fi
 done

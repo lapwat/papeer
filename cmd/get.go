@@ -25,6 +25,7 @@ type GetOptions struct {
 	depth    int
 	limit    int
 	offset   int
+	reverse  bool
 	delay    int
 	threads  int
 	// includeUrl bool
@@ -49,6 +50,7 @@ func init() {
 	getCmd.Flags().IntVarP(&getOpts.depth, "depth", "d", 0, "scraping depth")
 	getCmd.Flags().IntVarP(&getOpts.limit, "limit", "l", -1, "limit number of chapters, use with depth/selector")
 	getCmd.Flags().IntVarP(&getOpts.offset, "offset", "o", 0, "skip first chapters, use with depth/selector")
+	getCmd.Flags().BoolVarP(&getOpts.reverse, "reverse", "r", false, "reverse chapter order")
 	getCmd.Flags().IntVarP(&getOpts.delay, "delay", "", -1, "time in milliseconds to wait before downloading next chapter, use with depth/selector")
 	getCmd.Flags().IntVarP(&getOpts.threads, "threads", "t", -1, "download concurrency, use with depth/selector")
 	getCmd.Flags().BoolVarP(&getOpts.include, "include", "i", false, "include URL as first chapter, use with depth/selector")
@@ -96,6 +98,10 @@ var getCmd = &cobra.Command{
 			return errors.New("cannot use offset option if depth/selector is not specified")
 		}
 
+		if cmd.Flags().Changed("reverse") && getOpts.depth == 0 && len(getOpts.Selector) == 0 {
+			return errors.New("cannot use reverse option if depth/selector is not specified")
+		}
+
 		if cmd.Flags().Changed("delay") && getOpts.depth == 0 && len(getOpts.Selector) == 0 {
 			return errors.New("cannot use delay option if depth/selector is not specified")
 		}
@@ -122,7 +128,6 @@ var getCmd = &cobra.Command{
 		for len(getOpts.Selector) < getOpts.depth+1 {
 			getOpts.Selector = append(getOpts.Selector, "")
 		}
-		fmt.Println(len(getOpts.Selector))
 
 		// generate config for each level
 		configs := make([]*book.ScrapeConfig, len(getOpts.Selector))
@@ -132,6 +137,7 @@ var getCmd = &cobra.Command{
 			config.Quiet = getOpts.quiet
 			config.Limit = getOpts.limit
 			config.Offset = getOpts.offset
+			config.Reverse = getOpts.reverse
 			config.Delay = getOpts.delay
 			config.Threads = getOpts.threads
 			config.ImagesOnly = getOpts.images

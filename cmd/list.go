@@ -21,6 +21,7 @@ type ListOptions struct {
 	depth    int
 	limit    int
 	offset   int
+	reverse  bool
 	delay    int
 	threads  int
 	// includeUrl bool
@@ -33,10 +34,12 @@ var listOpts *ListOptions
 func init() {
 	listOpts = &ListOptions{}
 
+	// common with get command
 	listCmd.Flags().StringSliceVarP(&listOpts.Selector, "selector", "s", []string{}, "table of contents CSS selector")
 	listCmd.Flags().IntVarP(&listOpts.depth, "depth", "d", 0, "scraping depth")
 	listCmd.Flags().IntVarP(&listOpts.limit, "limit", "l", -1, "limit number of chapters, use with depth/selector")
 	listCmd.Flags().IntVarP(&listOpts.offset, "offset", "o", 0, "skip first chapters, use with depth/selector")
+	listCmd.Flags().BoolVarP(&listOpts.reverse, "reverse", "r", false, "reverse chapter order")
 	listCmd.Flags().IntVarP(&listOpts.delay, "delay", "", -1, "time in milliseconds to wait before downloading next chapter, use with depth/selector")
 	listCmd.Flags().IntVarP(&listOpts.threads, "threads", "t", -1, "download concurrency, use with depth/selector")
 	listCmd.Flags().BoolVarP(&listOpts.include, "include", "i", false, "include URL as first chapter, use with depth/selector")
@@ -66,7 +69,7 @@ var listCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		links, path, _, err := book.GetLinks(base, listOpts.Selector[0], listOpts.limit, listOpts.offset, listOpts.include)
+		links, path, _, err := book.GetLinks(base, listOpts.Selector[0], listOpts.limit, listOpts.offset, listOpts.reverse, listOpts.include)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -48,6 +48,7 @@ Flags:
   -o, --offset int         skip first chapters, use with depth/selector
       --output string      file name (default: book name)
   -q, --quiet              hide progress bar
+  -r, --reverse            reverse chapter order
   -s, --selector strings   table of contents CSS selector
   -t, --threads int        download concurrency, use with depth/selector (default -1)
       --use-link-name      use link name for chapter title
@@ -77,7 +78,7 @@ You can chain this option to grab several level of pages with diferent selectors
 
 ### Display the table of contents
 
-Before actually scraping a whole website, it is a good idea to use the `list` command. This command is like a **dry run**, which lets you vizualize the content before actually retrieving it. You can use several options to customize the table of contents extraction, such as `selector`, `limit`, `offset` and `include`. Type `papeer list --help` for more information about those options.
+Before actually scraping a whole website, it is a good idea to use the `list` command. This command is like a **dry run**, which lets you vizualize the content before actually retrieving it. You can use several options to customize the table of contents extraction, such as `selector`, `limit`, `offset`, `reverse` and `include`. Type `papeer list --help` for more information about those options.
 
 ```sh
 papeer list https://12factor.net/ -s 'section.concrete>article>h2>a'
@@ -137,7 +138,7 @@ go get -u github.com/lapwat/papeer
 ```sh
 # use platform=darwin for MacOS
 platform=linux
-release=0.4.1
+release=0.4.2
 
 # download and extract
 curl -L https://github.com/lapwat/papeer/releases/download/v$release/papeer-v$release-$platform-amd64.tar.gz > papeer.tar.gz
@@ -150,7 +151,7 @@ sudo mv papeer /usr/local/bin
 
 ### Windows
 
-Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.4.1/papeer-v0.4.1-windows-amd64.exe.zip).
+Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.4.2/papeer-v0.4.2-windows-amd64.exe.zip).
 
 ## MOBI support
 

@@ -23,6 +23,7 @@ type ScrapeConfig struct {
 	Quiet       bool
 	Limit       int
 	Offset      int
+	Reverse     bool
 	Delay       int
 	Threads     int
 	Include     bool
@@ -31,7 +32,7 @@ type ScrapeConfig struct {
 }
 
 func NewScrapeConfig() *ScrapeConfig {
-	return &ScrapeConfig{0, "", false, -1, 0, -1, -1, true, false, false}
+	return &ScrapeConfig{0, "", false, -1, 0, false, -1, -1, true, false, false}
 }
 
 func NewScrapeConfigs(selectors []string) []*ScrapeConfig {
@@ -167,20 +168,23 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 		updateProgressBarName(index, name)
 	}
 
-	subchapters := []chapter{}
+	var subchapters []chapter
 	if len(configs) > 1 {
-		// add subchapters
 
-		links, _, _, err := GetLinks(base, config.Selector, config.Limit, config.Offset, false)
+		// retrieve links on page
+		links, _, _, err := GetLinks(base, config.Selector, config.Limit, config.Offset, config.Reverse, false)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		subchapters = make([]chapter, len(links))
+		// init progess bar
 		var p progress
 		if config.Quiet == false {
 			p = NewProgress(links, name, config.Depth)
 		}
+
+		// init chapters list
+		subchapters = make([]chapter, len(links))
 
 		if config.Delay >= 0 {
 
@@ -277,7 +281,7 @@ func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig, q
 		log.Fatal(err)
 	}
 
-	links, _, home, err := GetLinks(base, config.Selector, config.Limit, config.Offset, config.Include)
+	links, _, home, err := GetLinks(base, config.Selector, config.Limit, config.Offset, config.Reverse, config.Include)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -370,7 +374,7 @@ func GetPath(elm *goquery.Selection) string {
 	return join
 }
 
-func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool) ([]link, string, chapter, error) {
+func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, include bool) ([]link, string, chapter, error) {
 	selectorSet := true
 	if len(selector) == 0 {
 		selector = "a"
@@ -434,9 +438,17 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, include bool)
 
 	home := NewChapterFromURL(url.String(), "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
 
+	// include home page
 	if include {
 		l := NewLink(url.String(), home.Name())
 		links = append([]link{l}, links...)
+	}
+
+	// reverse links
+	if reverse {
+		for i, j := 0, len(links)-1; i < j; i, j = i+1, j-1 {
+			links[i], links[j] = links[j], links[i]
+		}
 	}
 
 	return links, pathMax, home, nil

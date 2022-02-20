@@ -182,6 +182,24 @@ func TestSubChaptersLimitOver(t *testing.T) {
 
 }
 
+func TestReverse(t *testing.T) {
+
+	config0 := NewScrapeConfig()
+	config0.Reverse = true
+
+	config1 := NewScrapeConfig()
+
+	c := NewChapterFromURL("https://books.lapw.at/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
+
+	got := c.SubChapters()[0].Name()
+	want := "The Twelve-Factor App"
+
+	if got != want {
+		t.Errorf("got %v, wanted %v", got, want)
+	}
+
+}
+
 func TestNotInclude(t *testing.T) {
 
 	config := NewScrapeConfig()
