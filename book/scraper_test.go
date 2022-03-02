@@ -128,6 +128,22 @@ func TestSubChapters(t *testing.T) {
 
 }
 
+func TestSubChaptersRSS(t *testing.T) {
+
+	config0 := NewScrapeConfig()
+	config1 := NewScrapeConfig()
+
+	c := NewChapterFromURL("https://blog.lapw.at/rss", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
+
+	got := len(c.SubChapters())
+	want := 8
+
+	if got != want {
+		t.Errorf("got %v, wanted %v", got, want)
+	}
+
+}
+
 func TestSubChaptersSelector(t *testing.T) {
 
 	config0 := NewScrapeConfig()
