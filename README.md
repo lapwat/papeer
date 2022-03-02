@@ -24,7 +24,7 @@ Papeer is a powerful **ereader internet vacuum**. It can scrape any website, rem
 
 ## Scrape a web page
 
-The `get` command lets you retrieve the content of any web page.
+The `get` command lets you retrieve the content of any web page or RSS feed.
 
 ```
 Scrape URL content
@@ -138,7 +138,7 @@ go get -u github.com/lapwat/papeer
 ```sh
 # use platform=darwin for MacOS
 platform=linux
-release=0.4.2
+release=0.5.0
 
 # download and extract
 curl -L https://github.com/lapwat/papeer/releases/download/v$release/papeer-v$release-$platform-amd64.tar.gz > papeer.tar.gz
@@ -151,7 +151,7 @@ sudo mv papeer /usr/local/bin
 
 ### Windows
 
-Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.4.2/papeer-v0.4.2-windows-amd64.exe.zip).
+Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.5.0/papeer-v0.5.0-windows-amd64.exe.zip).
 
 ## MOBI support
 

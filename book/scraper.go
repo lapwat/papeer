@@ -15,6 +15,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	readability "github.com/go-shiori/go-readability"
 	colly "github.com/gocolly/colly/v2"
+	"github.com/mmcdole/gofeed"
 )
 
 type ScrapeConfig struct {
@@ -375,56 +376,75 @@ func GetPath(elm *goquery.Selection) string {
 }
 
 func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, include bool) ([]link, string, chapter, error) {
-	selectorSet := true
-	if len(selector) == 0 {
-		selector = "a"
-		selectorSet = false
+	var links []link
+	var pathMax string
+
+	parser := gofeed.NewParser()
+	feed, err := parser.ParseURL(url.String())
+
+	if err == nil {
+		// RSS feed
+
+		for _, item := range feed.Items {
+			links = append(links, NewLink(item.Link, item.Title))
+		}
+
+		pathMax = "RSS"
+	} else {
+		// HTML website
+
+		selectorSet := true
+		if len(selector) == 0 {
+			selector = "a"
+			selectorSet = false
+		}
+	
+		pathLinks := map[string][]link{}
+		pathCount := map[string]int{}
+		pathMax = ""
+	
+		// visit and count link classes
+		c := colly.NewCollector()
+		c.OnHTML(selector, func(e *colly.HTMLElement) {
+			href := e.Attr("href")
+			text := strings.TrimSpace(e.Text)
+			path := GetPath(e.DOM)
+			key := path
+	
+			if selectorSet {
+	
+				// if selector is set, we use the selector specified by the user
+	
+				key = selector
+				pathLinks[key] = append(pathLinks[key], NewLink(href, text))
+				pathCount[key] += 1
+				pathMax = key
+	
+			} else {
+	
+				// if selector is not set, we compute the selector ourselves
+	
+				class := e.Attr("class")
+				// include the element class to make sure we have the same exact path for every link in the table of content
+				key = fmt.Sprintf("%s.%s", path, class)
+	
+				// we count this key if the link text is not empty
+				if text != "" {
+					pathLinks[key] = append(pathLinks[key], NewLink(href, text))
+					pathCount[key] += len(text)
+	
+					if pathCount[key] > pathCount[pathMax] {
+						pathMax = key
+					}
+				}
+	
+			}
+		})
+		c.Visit(url.String())
+
+		links = pathLinks[pathMax]
 	}
 
-	pathLinks := map[string][]link{}
-	pathCount := map[string]int{}
-	pathMax := ""
-
-	// visit and count link classes
-	c := colly.NewCollector()
-	c.OnHTML(selector, func(e *colly.HTMLElement) {
-		href := e.Attr("href")
-		text := strings.TrimSpace(e.Text)
-		path := GetPath(e.DOM)
-		key := path
-
-		if selectorSet {
-
-			// if selector is set, we use the selector specified by the user
-
-			key = selector
-			pathLinks[key] = append(pathLinks[key], NewLink(href, text))
-			pathCount[key] += 1
-			pathMax = key
-
-		} else {
-
-			// if selector is not set, we compute the selector ourselves
-
-			class := e.Attr("class")
-			// include the element class to make sure we have the same exact path for every link in the table of content
-			key = fmt.Sprintf("%s.%s", path, class)
-
-			// we count this key if the link text is not empty
-			if text != "" {
-				pathLinks[key] = append(pathLinks[key], NewLink(href, text))
-				pathCount[key] += len(text)
-
-				if pathCount[key] > pathCount[pathMax] {
-					pathMax = key
-				}
-			}
-
-		}
-	})
-	c.Visit(url.String())
-
-	links := pathLinks[pathMax]
 	if len(links) == 0 {
 		return []link{}, pathMax, chapter{}, fmt.Errorf("no link found for selector: %s", selector)
 	}
