@@ -398,11 +398,11 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 			selector = "a"
 			selectorSet = false
 		}
-	
+
 		pathLinks := map[string][]link{}
 		pathCount := map[string]int{}
 		pathMax = ""
-	
+
 		// visit and count link classes
 		c := colly.NewCollector()
 		c.OnHTML(selector, func(e *colly.HTMLElement) {
@@ -410,34 +410,34 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 			text := strings.TrimSpace(e.Text)
 			path := GetPath(e.DOM)
 			key := path
-	
+
 			if selectorSet {
-	
+
 				// if selector is set, we use the selector specified by the user
-	
+
 				key = selector
 				pathLinks[key] = append(pathLinks[key], NewLink(href, text))
 				pathCount[key] += 1
 				pathMax = key
-	
+
 			} else {
-	
+
 				// if selector is not set, we compute the selector ourselves
-	
+
 				class := e.Attr("class")
 				// include the element class to make sure we have the same exact path for every link in the table of content
 				key = fmt.Sprintf("%s.%s", path, class)
-	
+
 				// we count this key if the link text is not empty
 				if text != "" {
 					pathLinks[key] = append(pathLinks[key], NewLink(href, text))
 					pathCount[key] += len(text)
-	
+
 					if pathCount[key] > pathCount[pathMax] {
 						pathMax = key
 					}
 				}
-	
+
 			}
 		})
 		c.Visit(url.String())
