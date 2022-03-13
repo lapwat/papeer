@@ -69,7 +69,7 @@ var listCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		links, path, _, err := book.GetLinks(base, listOpts.Selector[0], listOpts.limit, listOpts.offset, listOpts.reverse, listOpts.include)
+		links, path, home, err := book.GetLinks(base, listOpts.Selector[0], listOpts.limit, listOpts.offset, listOpts.reverse, listOpts.include)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -79,6 +79,8 @@ var listCmd = &cobra.Command{
 		t.Style().Options.DrawBorder = false
 		t.Style().Options.SeparateColumns = false
 		t.Style().Options.SeparateHeader = false
+
+		t.SetTitle(home.Name())
 
 		// format selector path
 		pathArray := strings.Split(path, "<")

@@ -14,15 +14,14 @@ do
     platform_split=(${platform//\// })
     GOOS=${platform_split[0]}
     GOARCH=${platform_split[1]}
-    output_name=papeer
 
     if [ $GOOS = "windows" ]; then
-        env GOOS=$GOOS GOARCH=$GOARCH go build -o "$output_name.exe"
-        zip "$output_name-v$version-$GOOS-$GOARCH.exe.zip" "$output_name.exe"
-        rm "$output_name.exe"
+        env GOOS=$GOOS GOARCH=$GOARCH go build -o papeer.exe
+        zip "papeer-v$version-$GOOS-$GOARCH.exe.zip" papeer.exe
+        rm papeer.exe
     else
-        env GOOS=$GOOS GOARCH=$GOARCH go build -o "$output_name"
-        tar czvf "$output_name-v$version-$GOOS-$GOARCH.tar.gz" "$output_name"
-        rm "$output_name"
+        env GOOS=$GOOS GOARCH=$GOARCH go build -o papeer
+        tar czvf "papeer-v$version-$GOOS-$GOARCH.tar.gz" papeer
+        rm papeer
     fi
 done
