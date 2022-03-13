@@ -16,7 +16,7 @@ jobs:
     - name: Install kindlegen
       run: |
         curl -L https://github.com/lapwat/papeer/releases/download/kindlegen/kindlegen_linux_2.6_i386_v2_9.tar.gz > kindlegen.tar.gz
-         xzvf kindlegen.tar.gz
+        tar xzvf kindlegen.tar.gz
         chmod +x kindlegen
     - name: Checkout
       uses: actions/checkout@v2
