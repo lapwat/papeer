@@ -1,7 +1,9 @@
 name: Test
 
 on:
-  - push
+  push:
+    paths:
+      - '**.go'
 
 jobs:
   test:
