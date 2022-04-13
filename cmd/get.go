@@ -3,7 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
+	"io/ioutil"
 
 	"github.com/spf13/cobra"
 
@@ -17,6 +19,7 @@ type GetOptions struct {
 	author string
 	Format string
 	output string
+	stdout bool
 	images bool
 	// ImagesOnly bool
 	quiet bool
@@ -40,8 +43,9 @@ func init() {
 
 	getCmd.PersistentFlags().StringVarP(&getOpts.name, "name", "n", "", "book name (default: page title)")
 	getCmd.PersistentFlags().StringVarP(&getOpts.author, "author", "a", "", "book author")
-	getCmd.PersistentFlags().StringVarP(&getOpts.Format, "format", "f", "md", "file format [stdout, md, epub, mobi]")
+	getCmd.PersistentFlags().StringVarP(&getOpts.Format, "format", "f", "md", "file format [md, epub, mobi]")
 	getCmd.PersistentFlags().StringVarP(&getOpts.output, "output", "", "", "file name (default: book name)")
+	getCmd.PersistentFlags().BoolVarP(&getOpts.stdout, "stdout", "", false, "print to standard output")
 	getCmd.PersistentFlags().BoolVarP(&getOpts.images, "images", "", false, "retrieve images only")
 	getCmd.PersistentFlags().BoolVarP(&getOpts.quiet, "quiet", "q", false, "hide progress bar")
 
@@ -69,7 +73,6 @@ var getCmd = &cobra.Command{
 		}
 
 		formatEnum := map[string]bool{
-			"stdout": true,
 			"md":     true,
 			"epub":   true,
 			"mobi":   true,
@@ -159,24 +162,49 @@ var getCmd = &cobra.Command{
 
 		c := book.NewChapterFromURL(url, "", configs, 0, func(index int, name string) {})
 
-		if getOpts.Format == "stdout" {
-			markdown := book.ToMarkdownString(c)
-			fmt.Println(markdown)
-		}
-
 		if getOpts.Format == "md" {
 			filename := book.ToMarkdown(c, getOpts.output)
-			fmt.Printf("Markdown saved to \"%s\"\n", filename)
+
+			if getOpts.stdout {
+				bytesRead, err := ioutil.ReadFile(filename)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				fmt.Println(string(bytesRead))
+			} else {
+				fmt.Printf("Markdown saved to \"%s\"\n", filename)
+			}
 		}
 
 		if getOpts.Format == "epub" {
 			filename := book.ToEpub(c, getOpts.output)
-			fmt.Printf("Ebook saved to \"%s\"\n", filename)
+
+			if getOpts.stdout {
+				bytesRead, err := ioutil.ReadFile(filename)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				fmt.Println(string(bytesRead))
+			} else {
+				fmt.Printf("Ebook saved to \"%s\"\n", filename)
+			}
 		}
 
 		if getOpts.Format == "mobi" {
 			filename := book.ToMobi(c, getOpts.output)
-			fmt.Printf("Ebook saved to \"%s\"\n", filename)
+
+			if getOpts.stdout {
+				bytesRead, err := ioutil.ReadFile(filename)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				fmt.Println(string(bytesRead))
+			} else {
+				fmt.Printf("Ebook saved to \"%s\"\n", filename)
+			}
 		}
 	},
 }

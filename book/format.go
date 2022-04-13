@@ -150,7 +150,7 @@ func ToMobi(c chapter, filename string) string {
 	ToEpub(c, filenameEPUB)
 
 	exec.Command("kindlegen", filenameEPUB).Run()
-	// exec command always return status 1 even if it succeed
+	// exec command always returns status 1 even if it succeed
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
