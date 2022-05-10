@@ -64,6 +64,8 @@ You can activate this mode by using the `depth` or `selector` options.
 
 This option defaults to 0, `papeer` will grab only the main page.
 
+This option defaults to 1 if the `limit` option is specified.
+
 If you specify a value greater than 0, `papeer` will grab pages as deep as the value you specify.
 
 > Using `include` option will include all intermediary levels into the book.
@@ -128,7 +130,7 @@ Markdown saved to "The_Twelve-Factor_App.md"
 ## From source
 
 ```sh
-go get -u github.com/lapwat/papeer
+go install github.com/lapwat/papeer@latest
 ```
 
 ## From binary
@@ -138,7 +140,7 @@ go get -u github.com/lapwat/papeer
 ```sh
 # use platform=darwin for MacOS
 platform=linux
-release=0.5.2
+release=0.5.4
 
 # download and extract
 curl -L https://github.com/lapwat/papeer/releases/download/v$release/papeer-v$release-$platform-amd64.tar.gz > papeer.tar.gz
@@ -151,7 +153,7 @@ sudo mv papeer /usr/local/bin
 
 ### Windows
 
-Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.5.2/papeer-v0.5.2-windows-amd64.exe.zip).
+Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.5.4/papeer-v0.5.4-windows-amd64.exe.zip).
 
 ## MOBI support
 

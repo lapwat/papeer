@@ -3,9 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"strings"
-	"io/ioutil"
 
 	"github.com/spf13/cobra"
 
@@ -73,9 +73,9 @@ var getCmd = &cobra.Command{
 		}
 
 		formatEnum := map[string]bool{
-			"md":     true,
-			"epub":   true,
-			"mobi":   true,
+			"md":   true,
+			"epub": true,
+			"mobi": true,
 		}
 
 		if formatEnum[getOpts.Format] != true {
@@ -89,12 +89,19 @@ var getCmd = &cobra.Command{
 			}
 		}
 
-		if cmd.Flags().Changed("include") && getOpts.depth == 0 && len(getOpts.Selector) == 0 {
-			return errors.New("cannot use include option if depth/selector is not specified")
+		// increase depth to match limit
+		if cmd.Flags().Changed("limit") && getOpts.depth == 0 {
+			getOpts.depth = 1
 		}
 
-		if cmd.Flags().Changed("limit") && getOpts.depth == 0 && len(getOpts.Selector) == 0 {
-			return errors.New("cannot use limit option if depth/selector is not specified")
+		// fill selector array with empty selectors to match depth
+		getOpts.Selector = append(getOpts.Selector, "")
+		for len(getOpts.Selector) < getOpts.depth+1 {
+			getOpts.Selector = append(getOpts.Selector, "")
+		}
+
+		if cmd.Flags().Changed("include") && getOpts.depth == 0 && len(getOpts.Selector) == 0 {
+			return errors.New("cannot use include option if depth/selector is not specified")
 		}
 
 		if cmd.Flags().Changed("offset") && getOpts.depth == 0 && len(getOpts.Selector) == 0 {
@@ -125,12 +132,6 @@ var getCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		url := args[0]
-
-		// fill selector array with empty selectors to match depth
-		getOpts.Selector = append(getOpts.Selector, "")
-		for len(getOpts.Selector) < getOpts.depth+1 {
-			getOpts.Selector = append(getOpts.Selector, "")
-		}
 
 		// generate config for each level
 		configs := make([]*book.ScrapeConfig, len(getOpts.Selector))
