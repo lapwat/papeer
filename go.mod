@@ -3,7 +3,7 @@ module github.com/lapwat/papeer
 go 1.17
 
 require (
-	github.com/JohannesKaufmann/html-to-markdown v1.3.3
+	github.com/JohannesKaufmann/html-to-markdown v1.3.5
 	github.com/bmaupin/go-epub v0.11.0
 	github.com/go-shiori/go-readability v0.0.0-20220215145315-dd6828d2f09b
 	github.com/jedib0t/go-pretty/v6 v6.3.1
@@ -44,8 +44,8 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
-	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
-	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
