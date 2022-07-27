@@ -140,7 +140,7 @@ go install github.com/lapwat/papeer@latest
 ```sh
 # use platform=darwin for MacOS
 platform=linux
-release=0.5.4
+release=0.5.5
 
 # download and extract
 curl -L https://github.com/lapwat/papeer/releases/download/v$release/papeer-v$release-$platform-amd64.tar.gz > papeer.tar.gz
@@ -153,7 +153,7 @@ sudo mv papeer /usr/local/bin
 
 ### Windows
 
-Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.5.4/papeer-v0.5.4-windows-amd64.exe.zip).
+Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.5.5/papeer-v0.5.5-windows-amd64.exe.zip).
 
 ## MOBI support
 
