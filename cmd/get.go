@@ -43,7 +43,7 @@ func init() {
 
 	getCmd.PersistentFlags().StringVarP(&getOpts.name, "name", "n", "", "book name (default: page title)")
 	getCmd.PersistentFlags().StringVarP(&getOpts.author, "author", "a", "", "book author")
-	getCmd.PersistentFlags().StringVarP(&getOpts.Format, "format", "f", "md", "file format [md, epub, mobi]")
+	getCmd.PersistentFlags().StringVarP(&getOpts.Format, "format", "f", "md", "file format [md, html, epub, mobi]")
 	getCmd.PersistentFlags().StringVarP(&getOpts.output, "output", "", "", "file name (default: book name)")
 	getCmd.PersistentFlags().BoolVarP(&getOpts.stdout, "stdout", "", false, "print to standard output")
 	getCmd.PersistentFlags().BoolVarP(&getOpts.images, "images", "", false, "retrieve images only")
@@ -74,6 +74,7 @@ var getCmd = &cobra.Command{
 
 		formatEnum := map[string]bool{
 			"md":   true,
+			"html": true,
 			"epub": true,
 			"mobi": true,
 		}
@@ -175,6 +176,21 @@ var getCmd = &cobra.Command{
 				fmt.Println(string(bytesRead))
 			} else {
 				fmt.Printf("Markdown saved to \"%s\"\n", filename)
+			}
+		}
+
+		if getOpts.Format == "html" {
+			filename := book.ToHtml(c, getOpts.output)
+
+			if getOpts.stdout {
+				bytesRead, err := ioutil.ReadFile(filename)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				fmt.Println(string(bytesRead))
+			} else {
+				fmt.Printf("Html saved to \"%s\"\n", filename)
 			}
 		}
 

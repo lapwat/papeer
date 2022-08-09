@@ -250,27 +250,42 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 		// we care about the content only if:
 		// - we include this level
 		// - we use the page name
-		content = article.Content
+
+		// parse HTML
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(article.Content))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// handle lazy images
+		doc.Find("img").Each(func(i int, source *goquery.Selection) {
+			src, exists := source.Attr("data-lazy-src")
+			if exists {
+				source.SetAttr("src", src)
+			}
+		})
+		doc.Find("source").Remove()
 
 		// extract images
 		if config.ImagesOnly {
-
-			// parse HTML
-			doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
-			if err != nil {
-				log.Fatal(err)
-			}
 
 			// append every image to content
 			content = ""
 			doc.Find("img").Each(func(i int, s *goquery.Selection) {
 				imageTag, _ := goquery.OuterHtml(s)
-				imageTag = strings.ReplaceAll(imageTag, "\n", "")
-
+				// imageTag = strings.ReplaceAll(imageTag, "\n", "")
 				content += imageTag
 			})
 
+		} else {
+
+			content, err = doc.Find("[id*=readability-page]").Html()
+			if err != nil {
+				log.Fatal(err)
+			}
+
 		}
+
 	}
 
 	return chapter{string(body), name, article.Byline, content, subchapters, config}

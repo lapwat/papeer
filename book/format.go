@@ -24,6 +24,7 @@ func Filename(name string) string {
 func ToMarkdownString(c chapter) string {
 	markdown := ""
 
+	// chapter content
 	if c.config.Include {
 		// title
 		markdown += fmt.Sprintf("%s\n", c.Name())
@@ -37,8 +38,8 @@ func ToMarkdownString(c chapter) string {
 		markdown += fmt.Sprintf("%s\n\n\n", content)
 	}
 
+	// subchapters content
 	for _, sc := range c.SubChapters() {
-		// subchapters content
 		markdown += fmt.Sprintf("%s\n\n\n", ToMarkdownString(sc))
 	}
 
@@ -58,6 +59,44 @@ func ToMarkdown(c chapter, filename string) string {
 		log.Fatal(err)
 	}
 	_, err2 := f.WriteString(markdown)
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+	f.Close()
+
+	return filename
+}
+
+func ToHtmlString(c chapter) string {
+	html := ""
+
+	// chapter content
+	if c.config.Include {
+		html += fmt.Sprintf("<h1>%s</h1>", c.Name())
+		html += c.Content()
+	}
+
+	// subchapters content
+	for _, sc := range c.SubChapters() {
+		html += ToHtmlString(sc)
+	}
+
+	return html
+}
+
+func ToHtml(c chapter, filename string) string {
+	if len(filename) == 0 {
+		filename = fmt.Sprintf("%s.html", Filename(c.Name()))
+	}
+
+	html := fmt.Sprintf("<html><head></head><body>%s</body></html>", ToHtmlString(c))
+
+	// write to file
+	f, err := os.Create(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err2 := f.WriteString(html)
 	if err2 != nil {
 		log.Fatal(err2)
 	}
@@ -88,6 +127,7 @@ func ToEpub(c chapter, filename string) string {
 func AppendToEpub(e *epub.Epub, c chapter) {
 	content := ""
 
+	// chapter content
 	if c.config.Include {
 
 		if c.config.ImagesOnly == false {
@@ -129,6 +169,7 @@ func AppendToEpub(e *epub.Epub, c chapter) {
 
 	}
 
+	// subchapters content
 	for _, sc := range c.SubChapters() {
 		AppendToEpub(e, sc)
 	}

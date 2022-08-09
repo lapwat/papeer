@@ -1,6 +1,6 @@
 # Papeer
 
-Papeer is a powerful **ereader internet vacuum**. It can scrape any website, removing ads and keeping only the relevant content (formatted text and images). You can export the content to Markdown, EPUB or MOBI files.
+Papeer is a powerful **ereader internet vacuum**. It can scrape any website, removing ads and keeping only the relevant content (formatted text and images). You can export the content to Markdown, HTML, EPUB or MOBI files.
 
 # Table of contents
 
@@ -39,7 +39,7 @@ Flags:
   -a, --author string      book author
       --delay int          time in milliseconds to wait before downloading next chapter, use with depth/selector (default -1)
   -d, --depth int          scraping depth
-  -f, --format string      file format [stdout, md, epub, mobi] (default "md")
+  -f, --format string      file format [md, html, epub, mobi] (default "md")
   -h, --help               help for get
       --images             retrieve images only
   -i, --include            include URL as first chapter, use with depth/selector
@@ -50,6 +50,7 @@ Flags:
   -q, --quiet              hide progress bar
   -r, --reverse            reverse chapter order
   -s, --selector strings   table of contents CSS selector
+      --stdout             print to standard output
   -t, --threads int        download concurrency, use with depth/selector (default -1)
       --use-link-name      use link name for chapter title
 ```
@@ -140,7 +141,7 @@ go install github.com/lapwat/papeer@latest
 ```sh
 # use platform=darwin for MacOS
 platform=linux
-release=0.5.5
+release=0.5.6
 
 # download and extract
 curl -L https://github.com/lapwat/papeer/releases/download/v$release/papeer-v$release-$platform-amd64.tar.gz > papeer.tar.gz
@@ -153,7 +154,7 @@ sudo mv papeer /usr/local/bin
 
 ### Windows
 
-Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.5.5/papeer-v0.5.5-windows-amd64.exe.zip).
+Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.5.6/papeer-v0.5.6-windows-amd64.zip).
 
 ## MOBI support
 

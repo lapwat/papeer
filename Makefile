@@ -2,7 +2,7 @@ format:
 	gofmt -s -w .
 
 test:
-	go test github.com/lapwat/papeer/book
+	go test ./...
 
 install:
 	go install
