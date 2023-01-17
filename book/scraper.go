@@ -36,6 +36,10 @@ func NewScrapeConfig() *ScrapeConfig {
 	return &ScrapeConfig{0, "", false, -1, 0, false, -1, -1, true, false, false}
 }
 
+func NewScrapeConfigNoInclude() *ScrapeConfig {
+	return &ScrapeConfig{0, "", false, -1, 0, false, -1, -1, false, false, false}
+}
+
 func NewScrapeConfigs(selectors []string) []*ScrapeConfig {
 	configs := []*ScrapeConfig{}
 
@@ -91,46 +95,6 @@ func NewScrapeConfigFake() *ScrapeConfig {
 	config.Include = false
 
 	return config
-}
-
-func NewBookFromURL(url string, selector []string, name, author string, include, ImagesOnly, useLinkName, quiet bool, limit, offset, delay, threads int) book {
-	config1 := NewScrapeConfig()
-	config1.ImagesOnly = ImagesOnly
-	config1.UseLinkName = useLinkName
-
-	var chapters []chapter
-	var home chapter
-
-	if len(selector) > 0 {
-		config2 := NewScrapeConfig()
-		config2.Selector = selector[0]
-		config2.Limit = limit
-		config2.Offset = offset
-		config2.Delay = delay
-		config2.Threads = threads
-		config2.Include = include
-		config2.ImagesOnly = ImagesOnly
-		config2.UseLinkName = useLinkName
-		chapters, home = tableOfContent(url, config2, config1, quiet)
-	} else {
-		chapters = []chapter{NewChapterFromURL(url, "", []*ScrapeConfig{config1}, 0, func(index int, name string) {})}
-		home = chapters[0]
-	}
-
-	if len(name) == 0 {
-		name = home.Name()
-	}
-
-	if len(author) == 0 {
-		author = home.Author()
-	}
-
-	b := New(name, author)
-	for _, c := range chapters {
-		b.AddChapter(c)
-	}
-
-	return b
 }
 
 func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int, updateProgressBarName func(index int, name string)) chapter {
@@ -396,6 +360,8 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseURL(url.String())
+
+	fmt.Println(feed, url.String(), err)
 
 	if err == nil {
 		// RSS feed

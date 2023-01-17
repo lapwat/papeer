@@ -132,7 +132,6 @@ var getCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		url := args[0]
 
 		// generate config for each level
 		configs := make([]*book.ScrapeConfig, len(getOpts.Selector))
@@ -162,7 +161,13 @@ var getCmd = &cobra.Command{
 			configs[index] = config
 		}
 
-		c := book.NewChapterFromURL(url, "", configs, 0, func(index int, name string) {})
+		// dummy root chapter to contain all subchapters
+		c := book.NewEmptyChapter()
+		for _, u := range args {
+			newChapter := book.NewChapterFromURL(u, "", configs, 0, func(index int, name string) {})
+			c.AddSubChapter(newChapter)
+		}
+		c.SetName(c.SubChapters()[0].Name())
 
 		if getOpts.Format == "md" {
 			filename := book.ToMarkdown(c, getOpts.output)
