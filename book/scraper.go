@@ -365,7 +365,12 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 		// RSS feed
 
 		for _, item := range feed.Items {
-			links = append(links, NewLink(item.Link, item.Title))
+			u, err := url.Parse(item.Link)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			links = append(links, NewLink(u.String(), item.Title))
 		}
 
 		pathMax = "RSS"
@@ -385,10 +390,15 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 		// visit and count link classes
 		c := colly.NewCollector()
 		c.OnHTML(selector, func(e *colly.HTMLElement) {
-			href := e.Attr("href")
 			text := strings.TrimSpace(e.Text)
 			path := GetPath(e.DOM)
 			key := path
+
+			u, err := url.Parse(e.Attr("href"))
+			if err != nil {
+				log.Fatal(err)
+			}
+			href := u.String()
 
 			if selectorSet {
 

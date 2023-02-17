@@ -1,7 +1,7 @@
 package book
 
 type link struct {
-	Href string `json:"href"`
+	Href string `json:"url"`
 	Text string `json:"name"`
 }
 
