@@ -156,12 +156,12 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 			// synchronous mode
 			for index, link := range links {
 				// and then use it to parse relative URLs
-				u, err := base.Parse(link.href)
+				u, err := base.Parse(link.Href)
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				sc := NewChapterFromURL(u.String(), link.text, configs[1:], index, p.UpdateName)
+				sc := NewChapterFromURL(u.String(), link.Text, configs[1:], index, p.UpdateName)
 				subchapters[index] = sc
 				if config.Quiet == false {
 					p.Increment(index)
@@ -189,12 +189,12 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 					defer wg.Done()
 
 					// and then use it to parse relative URLs
-					u, err := base.Parse(l.href)
+					u, err := base.Parse(l.Href)
 					if err != nil {
 						log.Fatal(err)
 					}
 
-					sc := NewChapterFromURL(u.String(), l.text, configs[1:], index, p.UpdateName)
+					sc := NewChapterFromURL(u.String(), l.Text, configs[1:], index, p.UpdateName)
 					subchapters[index] = sc
 
 					if config.Quiet == false {
@@ -279,12 +279,12 @@ func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig, q
 
 		for index, l := range links {
 			// and then use it to parse relative URLs
-			u, err := base.Parse(l.href)
+			u, err := base.Parse(l.Href)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			chapters[index] = NewChapterFromURL(u.String(), l.text, []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
+			chapters[index] = NewChapterFromURL(u.String(), l.Text, []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
 
 			if quiet == false {
 				p.Increment(index)
@@ -317,12 +317,12 @@ func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig, q
 				defer wg.Done()
 
 				// and then use it to parse relative URLs
-				u, err := base.Parse(l.href)
+				u, err := base.Parse(l.Href)
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				chapters[index] = NewChapterFromURL(u.String(), l.text, []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
+				chapters[index] = NewChapterFromURL(u.String(), l.Text, []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
 
 				if quiet == false {
 					p.Increment(index)
@@ -360,8 +360,6 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseURL(url.String())
-
-	fmt.Println(feed, url.String(), err)
 
 	if err == nil {
 		// RSS feed

@@ -141,7 +141,7 @@ go install github.com/lapwat/papeer@latest
 ```sh
 # use platform=darwin for MacOS
 platform=linux
-release=0.6.0
+release=0.6.1
 
 # download and extract
 curl -L https://github.com/lapwat/papeer/releases/download/v$release/papeer-v$release-$platform-amd64.tar.gz > papeer.tar.gz

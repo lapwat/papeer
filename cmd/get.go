@@ -21,17 +21,15 @@ type GetOptions struct {
 	output string
 	stdout bool
 	images bool
-	// ImagesOnly bool
-	quiet bool
+	quiet  bool
 
-	Selector []string
-	depth    int
-	limit    int
-	offset   int
-	reverse  bool
-	delay    int
-	threads  int
-	// includeUrl bool
+	Selector    []string
+	depth       int
+	limit       int
+	offset      int
+	reverse     bool
+	delay       int
+	threads     int
 	include     bool
 	useLinkName bool
 }
@@ -41,13 +39,13 @@ var getOpts *GetOptions
 func init() {
 	getOpts = &GetOptions{}
 
-	getCmd.PersistentFlags().StringVarP(&getOpts.name, "name", "n", "", "book name (default: page title)")
-	getCmd.PersistentFlags().StringVarP(&getOpts.author, "author", "a", "", "book author")
-	getCmd.PersistentFlags().StringVarP(&getOpts.Format, "format", "f", "md", "file format [md, html, epub, mobi]")
-	getCmd.PersistentFlags().StringVarP(&getOpts.output, "output", "", "", "file name (default: book name)")
-	getCmd.PersistentFlags().BoolVarP(&getOpts.stdout, "stdout", "", false, "print to standard output")
-	getCmd.PersistentFlags().BoolVarP(&getOpts.images, "images", "", false, "retrieve images only")
-	getCmd.PersistentFlags().BoolVarP(&getOpts.quiet, "quiet", "q", false, "hide progress bar")
+	getCmd.Flags().StringVarP(&getOpts.name, "name", "n", "", "book name (default: page title)")
+	getCmd.Flags().StringVarP(&getOpts.author, "author", "a", "", "book author")
+	getCmd.Flags().StringVarP(&getOpts.Format, "format", "f", "md", "file format [md, html, epub, mobi]")
+	getCmd.Flags().StringVarP(&getOpts.output, "output", "", "", "file name (default: book name)")
+	getCmd.Flags().BoolVarP(&getOpts.stdout, "stdout", "", false, "print to standard output")
+	getCmd.Flags().BoolVarP(&getOpts.images, "images", "", false, "retrieve images only")
+	getCmd.Flags().BoolVarP(&getOpts.quiet, "quiet", "q", false, "hide progress bar")
 
 	// common with list command
 	getCmd.Flags().StringSliceVarP(&getOpts.Selector, "selector", "s", []string{}, "table of contents CSS selector")
@@ -72,13 +70,13 @@ var getCmd = &cobra.Command{
 			return errors.New("requires an URL argument")
 		}
 
+		// check provided format is in list
 		formatEnum := map[string]bool{
 			"md":   true,
 			"html": true,
 			"epub": true,
 			"mobi": true,
 		}
-
 		if formatEnum[getOpts.Format] != true {
 			return fmt.Errorf("invalid format specified: %s", getOpts.Format)
 		}

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -17,14 +18,15 @@ import (
 type ListOptions struct {
 	// url string
 
-	Selector []string
-	depth    int
-	limit    int
-	offset   int
-	reverse  bool
-	delay    int
-	threads  int
-	// includeUrl bool
+	output string
+
+	Selector    []string
+	depth       int
+	limit       int
+	offset      int
+	reverse     bool
+	delay       int
+	threads     int
 	include     bool
 	useLinkName bool
 }
@@ -34,11 +36,13 @@ var listOpts *ListOptions
 func init() {
 	listOpts = &ListOptions{}
 
+	listCmd.Flags().StringVarP(&listOpts.output, "output", "o", "table", "file format [table, json]")
+
 	// common with get command
 	listCmd.Flags().StringSliceVarP(&listOpts.Selector, "selector", "s", []string{}, "table of contents CSS selector")
 	listCmd.Flags().IntVarP(&listOpts.depth, "depth", "d", 0, "scraping depth")
 	listCmd.Flags().IntVarP(&listOpts.limit, "limit", "l", -1, "limit number of chapters, use with depth/selector")
-	listCmd.Flags().IntVarP(&listOpts.offset, "offset", "o", 0, "skip first chapters, use with depth/selector")
+	listCmd.Flags().IntVarP(&listOpts.offset, "offset", "", 0, "skip first chapters, use with depth/selector")
 	listCmd.Flags().BoolVarP(&listOpts.reverse, "reverse", "r", false, "reverse chapter order")
 	listCmd.Flags().IntVarP(&listOpts.delay, "delay", "", -1, "time in milliseconds to wait before downloading next chapter, use with depth/selector")
 	listCmd.Flags().IntVarP(&listOpts.threads, "threads", "t", -1, "download concurrency, use with depth/selector")
@@ -57,6 +61,16 @@ var listCmd = &cobra.Command{
 		if len(args) < 1 {
 			return errors.New("requires an URL argument")
 		}
+
+		// check provided output is in list
+		outputEnum := map[string]bool{
+			"table": true,
+			"json":  true,
+		}
+		if outputEnum[listOpts.output] != true {
+			return fmt.Errorf("invalid output specified: %s", listOpts.output)
+		}
+
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -74,34 +88,52 @@ var listCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		t := table.NewWriter()
-		t.SetOutputMirror(os.Stdout)
-		t.Style().Options.DrawBorder = false
-		t.Style().Options.SeparateColumns = false
-		t.Style().Options.SeparateHeader = false
+		switch listOpts.output {
 
-		t.SetTitle(home.Name())
+		// render as table
+		case "table":
+			t := table.NewWriter()
+			t.SetOutputMirror(os.Stdout)
+			t.Style().Options.DrawBorder = false
+			t.Style().Options.SeparateColumns = false
+			t.Style().Options.SeparateHeader = false
 
-		// format selector path
-		pathArray := strings.Split(path, "<")
-		// reverse path
-		for i, j := 0, len(pathArray)-1; i < j; i, j = i+1, j-1 {
-			pathArray[i], pathArray[j] = pathArray[j], pathArray[i]
-		}
-		pathFormatted := strings.Join(pathArray, ">")
+			t.SetTitle(home.Name())
 
-		t.AppendHeader(table.Row{"#", "Name", fmt.Sprintf("Url [%s]", pathFormatted)})
+			// format selector path
+			pathArray := strings.Split(path, "<")
+			// reverse path
+			for i, j := 0, len(pathArray)-1; i < j; i, j = i+1, j-1 {
+				pathArray[i], pathArray[j] = pathArray[j], pathArray[i]
+			}
+			pathFormatted := strings.Join(pathArray, ">")
 
-		for index, link := range links {
-			u, err := base.Parse(link.Href())
+			t.AppendHeader(table.Row{"#", "Name", fmt.Sprintf("Url [%s]", pathFormatted)})
+
+			for index, link := range links {
+				u, err := base.Parse(link.Href)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				t.AppendRow([]interface{}{index + 1, link.Text, u.String()})
+			}
+
+			t.Render()
+
+		// render as json
+		case "json":
+			book := make(map[string]interface{})
+			book["name"] = home.Name()
+			book["chapters"] = links
+
+			bookJson, err := json.Marshal(book)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			t.AppendRow([]interface{}{index + 1, link.Text(), u.String()})
+			fmt.Println(string(bookJson))
 		}
-
-		t.Render()
 
 	},
 }

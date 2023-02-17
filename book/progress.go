@@ -27,7 +27,7 @@ func NewProgress(links []link, parent string, depth int) progress {
 	if len(links) <= 50 {
 		for index, link := range links {
 			bar := uiprogress.AddBar(1)
-			barText := fmt.Sprintf("%v#%v %v", indent, index+1, link.Text())
+			barText := fmt.Sprintf("%v#%v %v", indent, index+1, link.Text)
 			bar.AppendFunc(func(b *uiprogress.Bar) string {
 				return barText
 			})
