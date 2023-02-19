@@ -88,6 +88,14 @@ var listCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		// format selector path
+		pathArray := strings.Split(path, "<")
+		// reverse path
+		for i, j := 0, len(pathArray)-1; i < j; i, j = i+1, j-1 {
+			pathArray[i], pathArray[j] = pathArray[j], pathArray[i]
+		}
+		pathFormatted := strings.Join(pathArray, ">")
+
 		switch listOpts.output {
 
 		// render as table
@@ -99,15 +107,6 @@ var listCmd = &cobra.Command{
 			t.Style().Options.SeparateHeader = false
 
 			t.SetTitle(home.Name())
-
-			// format selector path
-			pathArray := strings.Split(path, "<")
-			// reverse path
-			for i, j := 0, len(pathArray)-1; i < j; i, j = i+1, j-1 {
-				pathArray[i], pathArray[j] = pathArray[j], pathArray[i]
-			}
-			pathFormatted := strings.Join(pathArray, ">")
-
 			t.AppendHeader(table.Row{"#", "Name", fmt.Sprintf("Url [%s]", pathFormatted)})
 
 			for index, link := range links {
@@ -124,6 +123,13 @@ var listCmd = &cobra.Command{
 		// render as json
 		case "json":
 			book := make(map[string]interface{})
+			book["url"] = base.String()
+			if pathFormatted == "RSS" {
+				book["type"] = "RSS"
+			} else {
+				book["type"] = "HTML"
+			}
+			book["path"] = pathFormatted
 			book["name"] = home.Name()
 			book["chapters"] = links
 
