@@ -1,91 +1,98 @@
-# Papeer
+<h1 align="center">
+  <img src="logo.png" alt="Papeer">
+  <br>
+  Papeer
+</h1>
 
-Papeer is a powerful **ereader internet vacuum**. It can scrape any website, removing ads and keeping only the relevant content (formatted text and images). You can export the content to Markdown, HTML, EPUB or MOBI files.
+<h4 align="center">Web scraper for ereaders</h4>
 
-# Table of contents
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#how-to-use">How To Use</a>
+</p>
 
-- [Usage](#usage)
-  * [Scrape a web page](#scrape-a-web-page)
-  * [Scrape a whole website](#scrape-a-whole-website)
-    + [`depth` option](#-depth--option)
-    + [`selector` option](#-selector--option)
-    + [Display the table of contents](#display-the-table-of-contents)
-    + [Scrape time](#scrape-time)
-- [Installation](#installation)
-  * [From source](#from-source)
-  * [From binary](#from-binary)
-    + [Linux / MacOS](#linux---macos)
-    + [Windows](#windows)
-  * [MOBI support](#mobi-support)
-- [Autocompletion](#autocompletion)
-- [Dependencies](#dependencies)
+  <img src="terminal.gif" alt="Papeer">
 
-# Usage
 
-## Scrape a web page
+## Features
 
-The `get` command lets you retrieve the content of any web page or RSS feed.
+* Scrape websites and RSS feeds
+* Keep relevant content only
+  - Formatted text (bold, italic, links)
+  - Images
+* Save websites as Markdown, HTML, EPUB or MOBI files
+* Use it as a an HTTP proxy
+* Cross platform
+  - Windows, MacOS and Linux ready
 
-```
-Scrape URL content
+# Installation
 
-Usage:
-  papeer get URL [flags]
-
-Examples:
-papeer get https://www.eff.org/cyberspace-independence
-
-Flags:
-  -a, --author string      book author
-      --delay int          time in milliseconds to wait before downloading next chapter, use with depth/selector (default -1)
-  -d, --depth int          scraping depth
-  -f, --format string      file format [md, html, epub, mobi] (default "md")
-  -h, --help               help for get
-      --images             retrieve images only
-  -i, --include            include URL as first chapter, use with depth/selector
-  -l, --limit int          limit number of chapters, use with depth/selector (default -1)
-  -n, --name string        book name (default: page title)
-  -o, --offset int         skip first chapters, use with depth/selector
-      --output string      file name (default: book name)
-  -q, --quiet              hide progress bar
-  -r, --reverse            reverse chapter order
-  -s, --selector strings   table of contents CSS selector
-      --stdout             print to standard output
-  -t, --threads int        download concurrency, use with depth/selector (default -1)
-      --use-link-name      use link name for chapter title
-```
-
-## Scrape a whole website
-
-If a navigation menu is present on a website, you can scrape the content of each page.
-
-You can activate this mode by using the `depth` or `selector` options.
-
-### `depth` option
-
-This option defaults to 0, `papeer` will grab only the main page.
-
-This option defaults to 1 if the `limit` option is specified.
-
-If you specify a value greater than 0, `papeer` will grab pages as deep as the value you specify.
-
-> Using `include` option will include all intermediary levels into the book.
-
-### `selector` option
-
-If this option is not specified, `papeer` will grab only the one page.
-
-If this option is specified, `papeer` will select the links (a HTML tag) present on the main page, then grab each one of them.
-
-You can chain this option to grab several level of pages with diferent selectors for each level.
-
-### Display the table of contents
-
-Before actually scraping a whole website, it is a good idea to use the `list` command. This command is like a **dry run**, which lets you vizualize the content before actually retrieving it. You can use several options to customize the table of contents extraction, such as `selector`, `limit`, `offset`, `reverse` and `include`. Type `papeer list --help` for more information about those options.
+## From source
 
 ```sh
-papeer list https://12factor.net/ -s 'section.concrete>article>h2>a'
+go install github.com/lapwat/papeer@latest
 ```
+
+## From binary
+
+Download [latest release](https://github.com/lapwat/papeer/releases/latest) for Windows, MacOS (darwin) and Linux.
+
+## MOBI support
+
+Install kindlegen to convert websites, Linux only.
+
+```sh
+TMPDIR=$(mktemp -d -t papeer-XXXXX)
+curl -L https://github.com/lapwat/papeer/releases/download/kindlegen/kindlegen_linux_2.6_i386_v2_9.tar.gz > $TMPDIR/kindlegen.tar.gz
+tar xzvf $TMPDIR/kindlegen.tar.gz -C $TMPDIR
+chmod +x $TMPDIR/kindlegen
+sudo mv $TMPDIR/kindlegen /usr/local/bin
+rm -rf $TMPDIR
+```
+
+Now you can use `--format=mobi` in your `get` command.
+
+## How To Use
+
+### Scrape a single page
+
+```sh
+papeer get URL
+```
+
+The `get` command let's you retrieve the content of a web page.
+
+It removes ads and menus with `go-readability`, keeping only formatted text and images.
+
+You can chain URLs.
+
+**Options**
+
+```sh
+-a, --author string      book author
+-f, --format string      file format [md, html, epub, mobi] (default "md")
+-h, --help               help for get
+    --images             retrieve images only
+-n, --name string        book name (default: page title)
+    --output string      file name (default: book name)
+    --stdout             print to standard output
+```
+
+### Scrape a whole website recursively
+
+**Display the table of contents**
+
+Before scraping a whole website, it is a good idea to use the `list` command. This command is like a _dry run_, **which lets you vizualize the content before retrieving it**.
+
+You can use several options to customize the table of contents extraction, such as `selector`, `limit`, `offset`, `reverse` and `include`. Type `papeer list --help` for more information about those options.
+
+The selector option should point to **`<a>` HTML tags**. If you don't specify it, the `selector` will be automatically determined based on the links present on the page.
+
+```sh
+papeer list https://12factor.net/ --selector='section.concrete>article>h2>a'
+```
+
 ```
  #  NAME                    URL                                    
  1  I. Codebase             https://12factor.net/codebase          
@@ -102,71 +109,81 @@ papeer list https://12factor.net/ -s 'section.concrete>article>h2>a'
 12  XII. Admin processes    https://12factor.net/admin-processes
 ```
 
-### Scrape time
+**Scrape the content**
 
-Once you are satisfied with the table of contents listed by the `ls` command, you can actually scrape the content of those pages. You can use the same options that you specified for the `ls` command. You can specify `delay` and `threads` options when using `selector` or `depth` options.
+Once you are satisfied with the table of contents listed by the `list` command, you can scrape the content of those pages with the `get` command. You can use the same options that you specified for the `list` command.
 
 ```sh
 papeer get https://12factor.net/ --selector='section.concrete>article>h2>a'
 ```
+
 ```
-[======================================>-----------------------------] Chapters 7 / 12
-[====================================================================] 1. I. Codebase
-[====================================================================] 2. II. Dependencies
-[====================================================================] 3. III. Config
-[====================================================================] 4. IV. Backing services
-[====================================================================] 5. V. Build, release, run
-[====================================================================] 6. VI. Processes
-[====================================================================] 7. VII. Port binding
-[--------------------------------------------------------------------] 8. VIII. Concurrency
-[--------------------------------------------------------------------] 9. IX. Disposability
-[--------------------------------------------------------------------] 10. X. Dev/prod parity
-[--------------------------------------------------------------------] 11. XI. Logs
-[--------------------------------------------------------------------] 12. XII. Admin processes
+[===>-----------------------------] Chapters 7 / 12
+[=================================] 1. I. Codebase
+[=================================] 2. II. Dependencies
+[=================================] 3. III. Config
+[=================================] 4. IV. Backing services
+[=================================] 5. V. Build, release, run
+[=================================] 6. VI. Processes
+[=================================] 7. VII. Port binding
+[---------------------------------] 8. VIII. Concurrency
+[---------------------------------] 9. IX. Disposability
+[---------------------------------] 10. X. Dev/prod parity
+[---------------------------------] 11. XI. Logs
+[---------------------------------] 12. XII. Admin processes
 Markdown saved to "The_Twelve-Factor_App.md"
 ```
 
-# Installation
+**Recursive mode options**
 
-## From source
+If a navigation menu is present on a website, you can scrape the content of each subpage.
+
+You can activate this mode by using the `depth` or `selector` options.
+
+**`depth`**
+
+This option defaults to 0, `papeer` will grab only the main page.
+
+This option defaults to 1 if the `limit` option is specified.
+
+If you specify a value greater than 0, `papeer` will grab pages as deep as the value you specify.
+
+**`selector`**
+
+If this option is not specified, `papeer` will grab only the one page.
+
+If this option is specified, `papeer` will select the links (a HTML tag) present on the main page, then grab each one of them.
+
+You can chain this option to grab several level of pages with diferent selectors for each level.
+
+**`include`**
+
+Using this option will include all intermediary levels into the book.
+
+**`delay` `threads`**
+
+By default, it will grab all the pages asynchonously.
+
+Use those options to tweak the synchronicity of scrape requests.
+
+**Automatic table of contents extraction**
+
+If you have a `depth` greater than 1 with no `selector`, it will be automatically determined based on the links present on the parent page.
+
+# Proxy
+
+You can use the `proxy` command to act like proxy. It can serve HTML or Markdown content based on the `--output` option.
 
 ```sh
-go install github.com/lapwat/papeer@latest
+papeer proxy --output=md
+# Proxy listening on port 8080...
 ```
 
-## From binary
-
-### Linux / MacOS
+You can call the endpoint with `curl` and the `--proxy` option.
 
 ```sh
-# use platform=darwin for MacOS
-platform=linux
-release=0.6.3
-
-# download and extract
-curl -L https://github.com/lapwat/papeer/releases/download/v$release/papeer-v$release-$platform-amd64.tar.gz > papeer.tar.gz
-tar xzvf papeer.tar.gz
-rm papeer.tar.gz
-
-# move to user binaries
-sudo mv papeer /usr/local/bin
-```
-
-### Windows
-
-Download [latest release](https://github.com/lapwat/papeer/releases/download/v0.6.3/papeer-v0.6.3-windows-amd64.zip).
-
-## MOBI support
-
-Install kindlegen to convert websites, Linux only
-
-```sh
-TMPDIR=$(mktemp -d -t papeer-XXXXX)
-curl -L https://github.com/lapwat/papeer/releases/download/kindlegen/kindlegen_linux_2.6_i386_v2_9.tar.gz > $TMPDIR/kindlegen.tar.gz
-tar xzvf $TMPDIR/kindlegen.tar.gz -C $TMPDIR
-chmod +x $TMPDIR/kindlegen
-sudo mv $TMPDIR/kindlegen /usr/local/bin
-rm -rf $TMPDIR
+curl --insecure --location --proxy localhost:8080 http://www.brainjar.com/java/host/test.html
+# This is a very simple HTML file.
 ```
 
 # Autocompletion
