@@ -127,6 +127,22 @@ func ToEpub(c chapter, filename string) string {
 func AppendToEpub(e *epub.Epub, c chapter) {
 	content := ""
 
+	// append table of content
+	if len(c.SubChapters()) > 1 {
+		html := "<h1>Table of Contents</h1>"
+
+		html += "<ol>"
+		for _, sc := range c.SubChapters() {
+			html += fmt.Sprintf("<li>%s</li>", sc.Name())
+		}
+		html += "</ol>"
+
+		_, err := e.AddSection(html, "Table of Contents", "", "")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	// chapter content
 	if c.config.Include {
 
