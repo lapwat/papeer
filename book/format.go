@@ -51,6 +51,9 @@ func ToMarkdown(c chapter, filename string) string {
 		filename = fmt.Sprintf("%s.md", Filename(c.Name()))
 	}
 
+	// Replace disallowed characters in filename to avoid issues in certain file systems.
+	filename = sanitizeFilename(filename)
+
 	markdown := ToMarkdownString(c)
 
 	// write to file
@@ -216,6 +219,23 @@ func ToMobi(c chapter, filename string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	return filename
+}
+
+// sanitizeFilename takes a string input, which is intended to be a filename,
+// and returns a sanitized version of the string where special characters have
+// been replaced with their full-width counterparts.
+func sanitizeFilename(input string) string {
+	filename := strings.ReplaceAll(input, ":", "：")
+	filename = strings.ReplaceAll(filename, "?", "？")
+	filename = strings.ReplaceAll(filename, "<", "＜")
+	filename = strings.ReplaceAll(filename, ">", "＞")
+	filename = strings.ReplaceAll(filename, "\"", "＂")
+	filename = strings.ReplaceAll(filename, "/", "／")
+	filename = strings.ReplaceAll(filename, "\\", "＼")
+	filename = strings.ReplaceAll(filename, "|", "｜")
+	filename = strings.ReplaceAll(filename, "*", "＊")
 
 	return filename
 }
