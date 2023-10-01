@@ -370,7 +370,7 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 				log.Fatal(err)
 			}
 
-			links = append(links, NewLink(u.String(), item.Title))
+			links = append(links, NewLink(u.String(), item.Title, item.PublishedParsed))
 		}
 
 		pathMax = "RSS"
@@ -405,7 +405,7 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 				// if selector is set, we use the selector specified by the user
 
 				key = selector
-				pathLinks[key] = append(pathLinks[key], NewLink(href, text))
+				pathLinks[key] = append(pathLinks[key], NewLink(href, text, &time.Time{}))
 				pathCount[key] += 1
 				pathMax = key
 
@@ -419,7 +419,7 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 
 				// we count this key if the link text is not empty
 				if text != "" {
-					pathLinks[key] = append(pathLinks[key], NewLink(href, text))
+					pathLinks[key] = append(pathLinks[key], NewLink(href, text, &time.Time{}))
 					pathCount[key] += len(text)
 
 					if pathCount[key] > pathCount[pathMax] {
@@ -449,7 +449,7 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 
 	// include home page
 	if include {
-		l := NewLink(url.String(), home.Name())
+		l := NewLink(url.String(), home.Name(), &time.Time{})
 		links = append([]link{l}, links...)
 	}
 
