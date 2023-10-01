@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -41,7 +42,7 @@ func init() {
 
 	getCmd.Flags().StringVarP(&getOpts.name, "name", "n", "", "book name (default: page title)")
 	getCmd.Flags().StringVarP(&getOpts.author, "author", "a", "", "book author")
-	getCmd.Flags().StringVarP(&getOpts.Format, "format", "f", "md", "file format [md, html, epub, mobi]")
+	getCmd.Flags().StringVarP(&getOpts.Format, "format", "f", "md", "file format [md, json, html, epub, mobi]")
 	getCmd.Flags().StringVarP(&getOpts.output, "output", "", "", "file name (default: book name)")
 	getCmd.Flags().BoolVarP(&getOpts.stdout, "stdout", "", false, "print to standard output")
 	getCmd.Flags().BoolVarP(&getOpts.images, "images", "", false, "retrieve images only")
@@ -73,6 +74,7 @@ var getCmd = &cobra.Command{
 		// check provided format is in list
 		formatEnum := map[string]bool{
 			"md":   true,
+			"json": true,
 			"html": true,
 			"epub": true,
 			"mobi": true,
@@ -180,6 +182,26 @@ var getCmd = &cobra.Command{
 			} else {
 				fmt.Printf("Markdown saved to \"%s\"\n", filename)
 			}
+		}
+
+		if getOpts.Format == "json" {
+			filename := book.ToMarkdown(c, getOpts.output)
+
+			bytesRead, err := ioutil.ReadFile(filename)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			book := make(map[string]interface{})
+			book["name"] = c.Name()
+			book["content"] = string(bytesRead)
+
+			bookJson, err := json.Marshal(book)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println(string(bookJson))
 		}
 
 		if getOpts.Format == "html" {

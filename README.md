@@ -40,7 +40,9 @@ Download [latest release](https://github.com/lapwat/papeer/releases/latest) for 
 
 ## MOBI support
 
-Install kindlegen to convert websites, Linux only.
+> Kindle e-readers now support EPUB format
+
+Install kindlegen to export websites to Kindle compatible ebooks, Linux only.
 
 ```sh
 TMPDIR=$(mktemp -d -t papeer-XXXXX)
