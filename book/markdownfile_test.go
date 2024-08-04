@@ -17,8 +17,7 @@ func TestToManyMarkdowns(t *testing.T) {
 	flag.Parse()
 
 	c := NewChapterFromURL("https://atomicdesign.bradfrost.com/table-of-contents/", "", config, 0, func(index int, name string) {})
-	sc := c.SubChapters()
-	flist := SaveEveryChapterAsMarkdown(sc, directory)
+	flist := SaveChapterAndSubChaptersAsMarkdown(c, directory)
 
 	got := len(flist)
 	want := 9
@@ -48,7 +47,7 @@ func TestToCheckNameOfMarkdowns(t *testing.T) {
 
 	c := NewChapterFromURL("https://atomicdesign.bradfrost.com/table-of-contents/", "", config, 0, func(index int, name string) {})
 	sc := c.SubChapters()
-	flist := SaveEveryChapterAsMarkdown(sc, directory)
+	flist := SaveChapterAndSubChaptersAsMarkdown(c, directory)
 
 	//check the file name contains the title of the web page
 	for _, file := range flist {

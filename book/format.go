@@ -1,7 +1,6 @@
 package book
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -223,16 +222,26 @@ func ToMobi(c chapter, filename string) string {
 	return filename
 }
 
-func SaveChapterAsMarkdown(c chapter, filename string, directory string) {
+// SaveChapterAndSubChaptersAsMarkdown saves a chapter and its subchapters as Markdown files
+func SaveChapterAndSubChaptersAsMarkdown(c chapter, directory string) []string {
+	var filelist []string
 
-	// Convert the chapter content to Markdown
-	markdown := ToMarkdownString(c)
+	// Sanitize the chapter name
+	c.name = strings.ReplaceAll(c.name, ".", "")
+	c.name = strings.ReplaceAll(c.name, "|", "")
+	c.name = strings.ReplaceAll(c.name, ":", "")
+
+	// Generate a unique filename for the chapter
+	filename := fmt.Sprintf("%s_%s.md", Filename(c.name), Filename(c.name))
 
 	if _, err := os.Stat(directory); os.IsNotExist(err) {
 		os.MkdirAll(directory, os.ModePerm)
 	}
 
 	filePath := filepath.Join(directory, filename)
+
+	// Convert the chapter content to Markdown
+	markdown := ToMarkdownString(c)
 
 	// Write the Markdown content to a file
 	f, err := os.Create(filePath)
@@ -244,33 +253,16 @@ func SaveChapterAsMarkdown(c chapter, filename string, directory string) {
 		log.Fatal(err2)
 	}
 	f.Close()
-}
 
-func SaveEveryChapterAsMarkdown(sc []chapter, directory string) []string {
-	var filelist = []string{}
+	filelist = append(filelist, filePath)
 
-	// Iterate over the subchapters
-	for _, subChapter := range sc {
-
-		subChapter.name = strings.ReplaceAll(subChapter.name, ".", "")
-		subChapter.name = strings.ReplaceAll(subChapter.name, "|", "")
-		subChapter.name = strings.ReplaceAll(subChapter.name, ":", "")
-
-		// Generate a unique filename for the chapter
-		filename := fmt.Sprintf("%s_%s.md", Filename(subChapter.name), Filename(subChapter.name))
-
-		if _, err := os.Stat(subChapter.name); errors.Is(err, os.ErrNotExist) {
-
-			// Save the chapter as a Markdown file
-			SaveChapterAsMarkdown(subChapter, filename, directory)
-		} else {
-			if err := os.Remove(subChapter.name); err != nil {
-				log.Fatal(err)
-			}
+	// Recursively process subchapters if any
+	if len(c.subChapters) > 0 {
+		subDir := filepath.Join(directory, Filename(c.name))
+		for _, subChapter := range c.subChapters {
+			filelist = append(filelist, SaveChapterAndSubChaptersAsMarkdown(subChapter, subDir)...)
 		}
-
-		filelist = append(filelist, filename)
 	}
-	return filelist
 
+	return filelist
 }
