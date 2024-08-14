@@ -1,6 +1,7 @@
 package book
 
 type chapter struct {
+	url         string
 	body        string
 	name        string
 	author      string
@@ -10,11 +11,11 @@ type chapter struct {
 }
 
 func NewEmptyChapter() chapter {
-	return chapter{"", "", "", "", []chapter{}, NewScrapeConfigNoInclude()}
+	return chapter{"", "", "", "", "", []chapter{}, NewScrapeConfigNoInclude()}
 }
 
-func NewChapter(body, name, author, content string, subChapters []chapter, config *ScrapeConfig) chapter {
-	return chapter{body, name, author, content, subChapters, config}
+func (c chapter) URL() string {
+	return c.url
 }
 
 func (c chapter) Body() string {

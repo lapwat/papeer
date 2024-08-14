@@ -7,7 +7,7 @@ import (
 
 func TestBody(t *testing.T) {
 
-	config := NewScrapeConfig()
+	config := NewScrapeConfigQuiet()
 	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
 
 	got := c.Body()
@@ -21,7 +21,7 @@ func TestBody(t *testing.T) {
 
 func TestName(t *testing.T) {
 
-	config := NewScrapeConfig()
+	config := NewScrapeConfigQuiet()
 	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
 
 	got := c.Name()
@@ -35,7 +35,7 @@ func TestName(t *testing.T) {
 
 func TestCustomName(t *testing.T) {
 
-	config := NewScrapeConfig()
+	config := NewScrapeConfigQuiet()
 	config.UseLinkName = true
 	c := NewChapterFromURL("https://example.com/", "Custom Name", []*ScrapeConfig{config}, 0, func(index int, name string) {})
 
@@ -50,7 +50,7 @@ func TestCustomName(t *testing.T) {
 
 func TestAuthor(t *testing.T) {
 
-	config := NewScrapeConfig()
+	config := NewScrapeConfigQuiet()
 	c := NewChapterFromURL("https://12factor.net/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
 
 	got := c.Author()
@@ -64,7 +64,7 @@ func TestAuthor(t *testing.T) {
 
 func TestContent(t *testing.T) {
 
-	config := NewScrapeConfig()
+	config := NewScrapeConfigQuiet()
 	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
 
 	got := c.Content()
@@ -78,10 +78,10 @@ func TestContent(t *testing.T) {
 
 func TestDelay(t *testing.T) {
 
-	config0 := NewScrapeConfig()
+	config0 := NewScrapeConfigQuiet()
 	config0.Delay = 500
 
-	config1 := NewScrapeConfig()
+	config1 := NewScrapeConfigQuiet()
 
 	start := time.Now()
 	NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
@@ -98,7 +98,7 @@ func TestDelay(t *testing.T) {
 
 func TestContentImagesOnly(t *testing.T) {
 
-	config := NewScrapeConfig()
+	config := NewScrapeConfigQuiet()
 	config.ImagesOnly = true
 
 	c := NewChapterFromURL("https://12factor.net/codebase", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
@@ -114,8 +114,8 @@ func TestContentImagesOnly(t *testing.T) {
 
 func TestSubChapters(t *testing.T) {
 
-	config0 := NewScrapeConfig()
-	config1 := NewScrapeConfig()
+	config0 := NewScrapeConfigQuiet()
+	config1 := NewScrapeConfigQuiet()
 
 	c := NewChapterFromURL("https://html5example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
@@ -130,8 +130,8 @@ func TestSubChapters(t *testing.T) {
 
 func TestSubChaptersRSS(t *testing.T) {
 
-	config0 := NewScrapeConfig()
-	config1 := NewScrapeConfig()
+	config0 := NewScrapeConfigQuiet()
+	config1 := NewScrapeConfigQuiet()
 
 	c := NewChapterFromURL("https://www.nginx.com/feed/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
@@ -146,10 +146,10 @@ func TestSubChaptersRSS(t *testing.T) {
 
 func TestSubChaptersSelector(t *testing.T) {
 
-	config0 := NewScrapeConfig()
+	config0 := NewScrapeConfigQuiet()
 	config0.Selector = "body > aside > p > a"
 
-	config1 := NewScrapeConfig()
+	config1 := NewScrapeConfigQuiet()
 
 	c := NewChapterFromURL("https://html5example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
@@ -164,10 +164,10 @@ func TestSubChaptersSelector(t *testing.T) {
 
 func TestSubChaptersLimit(t *testing.T) {
 
-	config0 := NewScrapeConfig()
+	config0 := NewScrapeConfigQuiet()
 	config0.Limit = 1
 
-	config1 := NewScrapeConfig()
+	config1 := NewScrapeConfigQuiet()
 
 	c := NewChapterFromURL("https://html5example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
@@ -182,10 +182,10 @@ func TestSubChaptersLimit(t *testing.T) {
 
 func TestSubChaptersLimitOver(t *testing.T) {
 
-	config0 := NewScrapeConfig()
+	config0 := NewScrapeConfigQuiet()
 	config0.Limit = 15
 
-	config1 := NewScrapeConfig()
+	config1 := NewScrapeConfigQuiet()
 
 	c := NewChapterFromURL("https://html5example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
@@ -200,10 +200,10 @@ func TestSubChaptersLimitOver(t *testing.T) {
 
 func TestReverse(t *testing.T) {
 
-	config0 := NewScrapeConfig()
+	config0 := NewScrapeConfigQuiet()
 	config0.Reverse = true
 
-	config1 := NewScrapeConfig()
+	config1 := NewScrapeConfigQuiet()
 
 	c := NewChapterFromURL("https://html5example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
@@ -218,7 +218,7 @@ func TestReverse(t *testing.T) {
 
 func TestNotInclude(t *testing.T) {
 
-	config := NewScrapeConfig()
+	config := NewScrapeConfigQuiet()
 	config.Include = false
 
 	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})

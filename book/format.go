@@ -30,6 +30,11 @@ func ToMarkdownString(c chapter) string {
 		markdown += fmt.Sprintf("%s\n", c.Name())
 		markdown += fmt.Sprintf("%s\n\n", strings.Repeat("=", len(c.Name())))
 
+		// url
+		if c.config.PrintURL {
+			markdown += fmt.Sprintf("_Source: %s_\n\n", c.URL())
+		}
+
 		// convert content to markdown
 		content, err := md.NewConverter("", true, nil).ConvertString(c.Content())
 		if err != nil {
@@ -72,7 +77,15 @@ func ToHtmlString(c chapter) string {
 
 	// chapter content
 	if c.config.Include {
-		html += fmt.Sprintf("<h1>%s</h1>", c.Name())
+		// title
+		html += fmt.Sprintf("<h1>%s</h1>\n", c.Name())
+
+		// url
+		if c.config.PrintURL {
+			html += fmt.Sprintf("<p><i>Source: %s</i></p>\n", c.URL())
+		}
+
+		// content
 		html += c.Content()
 	}
 
@@ -114,19 +127,6 @@ func ToEpub(c chapter, filename string) string {
 	e := epub.NewEpub(c.Name())
 	e.SetAuthor(c.Author())
 
-	AppendToEpub(e, c)
-
-	err := e.Write(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return filename
-}
-
-func AppendToEpub(e *epub.Epub, c chapter) {
-	content := ""
-
 	// append table of content
 	if len(c.SubChapters()) > 1 {
 		html := "<h1>Table of Contents</h1>"
@@ -142,6 +142,19 @@ func AppendToEpub(e *epub.Epub, c chapter) {
 			log.Fatal(err)
 		}
 	}
+
+	AppendToEpub(e, c)
+
+	err := e.Write(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return filename
+}
+
+func AppendToEpub(e *epub.Epub, c chapter) {
+	content := ""
 
 	// chapter content
 	if c.config.Include {
@@ -173,8 +186,15 @@ func AppendToEpub(e *epub.Epub, c chapter) {
 		html := ""
 		// add title only if ImagesOnly = false
 		if c.config.ImagesOnly == false {
-			html += fmt.Sprintf("<h1>%s</h1>", c.Name())
+			html += fmt.Sprintf("<h1>%s</h1>\n", c.Name())
 		}
+
+		// url
+		if c.config.PrintURL {
+			html += fmt.Sprintf("<p><i>Source: %s</i></p>\n", c.URL())
+		}
+
+		// content
 		html += content
 
 		//  write to epub file

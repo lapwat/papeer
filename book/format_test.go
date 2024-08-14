@@ -19,7 +19,7 @@ func TestFilename(t *testing.T) {
 
 func TestToMarkdownString(t *testing.T) {
 
-	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 
 	got := ToMarkdownString(c)
 	want := "Example Domain\n==============\n\nThis domain is for use in illustrative examples in documents. You may use this\ndomain in literature without prior coordination or asking for permission.\n\n[More information...](https://www.iana.org/domains/example)\n\n\n"
@@ -30,9 +30,25 @@ func TestToMarkdownString(t *testing.T) {
 
 }
 
+func TestToMarkdownPrintURL(t *testing.T) {
+
+	config := NewScrapeConfigQuiet()
+	config.PrintURL = true
+
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
+
+	got := ToMarkdownString(c)
+	want := "Example Domain\n==============\n\n_Source: https://example.com/_\n\nThis domain is for use in illustrative examples in documents. You may use this\ndomain in literature without prior coordination or asking for permission.\n\n[More information...](https://www.iana.org/domains/example)\n\n\n"
+
+	if got != want {
+		t.Errorf("got %v, wanted %v", got, want)
+	}
+
+}
+
 func TestToMarkdown(t *testing.T) {
 
-	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 	ToMarkdown(c, "")
 
 	filename := "Example_Domain.md"
@@ -49,7 +65,7 @@ func TestToMarkdown(t *testing.T) {
 func TestToMarkdownFilename(t *testing.T) {
 
 	filename := "ebook.md"
-	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 	ToMarkdown(c, filename)
 
 	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
@@ -64,10 +80,26 @@ func TestToMarkdownFilename(t *testing.T) {
 
 func TestToHtmlString(t *testing.T) {
 
-	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 
 	got := ToHtmlString(c)
-	want := "<h1>Example Domain</h1><div>\n    \n    <p>This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.</p>\n    <p><a href=\"https://www.iana.org/domains/example\">More information...</a></p>\n</div>"
+	want := "<h1>Example Domain</h1>\n<div>\n    \n    <p>This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.</p>\n    <p><a href=\"https://www.iana.org/domains/example\">More information...</a></p>\n</div>"
+
+	if got != want {
+		t.Errorf("got %q, wanted %q", got, want)
+	}
+
+}
+
+func TestToHtmlPrintURL(t *testing.T) {
+
+	config := NewScrapeConfigQuiet()
+	config.PrintURL = true
+
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
+
+	got := ToHtmlString(c)
+	want := "<h1>Example Domain</h1>\n<p><i>Source: https://example.com/</i></p>\n<div>\n    \n    <p>This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.</p>\n    <p><a href=\"https://www.iana.org/domains/example\">More information...</a></p>\n</div>"
 
 	if got != want {
 		t.Errorf("got %q, wanted %q", got, want)
@@ -77,7 +109,7 @@ func TestToHtmlString(t *testing.T) {
 
 func TestToHtml(t *testing.T) {
 
-	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 	ToHtml(c, "")
 
 	filename := "Example_Domain.html"
@@ -94,7 +126,7 @@ func TestToHtml(t *testing.T) {
 func TestToHtmlFilename(t *testing.T) {
 
 	filename := "ebook.html"
-	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 	ToHtml(c, filename)
 
 	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
@@ -109,7 +141,7 @@ func TestToHtmlFilename(t *testing.T) {
 
 func TestToEpub(t *testing.T) {
 
-	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 	ToEpub(c, "")
 
 	filename := "Example_Domain.epub"
@@ -126,7 +158,7 @@ func TestToEpub(t *testing.T) {
 func TestToEpubFilename(t *testing.T) {
 
 	filename := "ebook.epub"
-	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 	ToEpub(c, filename)
 
 	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
@@ -141,7 +173,7 @@ func TestToEpubFilename(t *testing.T) {
 
 func TestToMobi(t *testing.T) {
 
-	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 	ToMobi(c, "")
 
 	filename := "Example_Domain.mobi"
@@ -158,7 +190,7 @@ func TestToMobi(t *testing.T) {
 func TestToMobiFilename(t *testing.T) {
 
 	filename := "ebook.mobi"
-	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfig()}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 	ToMobi(c, filename)
 
 	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {

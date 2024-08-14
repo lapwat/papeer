@@ -33,6 +33,7 @@ type GetOptions struct {
 	threads     int
 	include     bool
 	useLinkName bool
+	printURL    bool
 }
 
 var getOpts *GetOptions
@@ -46,6 +47,7 @@ func init() {
 	getCmd.Flags().StringVarP(&getOpts.output, "output", "", "", "file name (default: book name)")
 	getCmd.Flags().BoolVarP(&getOpts.stdout, "stdout", "", false, "print to standard output")
 	getCmd.Flags().BoolVarP(&getOpts.images, "images", "", false, "retrieve images only")
+	getCmd.Flags().BoolVarP(&getOpts.printURL, "print-url", "", false, "print url after chapter title")
 	getCmd.Flags().BoolVarP(&getOpts.quiet, "quiet", "q", false, "hide progress bar")
 
 	// common with list command
@@ -147,6 +149,7 @@ var getCmd = &cobra.Command{
 			config.ImagesOnly = getOpts.images
 			config.Include = getOpts.include
 			config.UseLinkName = getOpts.useLinkName
+			config.PrintURL = getOpts.printURL
 
 			// do not use link name for root level as there is not parent link
 			if index == 0 {
