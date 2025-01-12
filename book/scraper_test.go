@@ -117,10 +117,10 @@ func TestSubChapters(t *testing.T) {
 	config0 := NewScrapeConfigQuiet()
 	config1 := NewScrapeConfigQuiet()
 
-	c := NewChapterFromURL("https://html5example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://12factor.net/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
 	got := len(c.SubChapters())
-	want := 14
+	want := 21
 
 	if got != want {
 		t.Errorf("got %v, wanted %v", got, want)
@@ -133,10 +133,10 @@ func TestSubChaptersRSS(t *testing.T) {
 	config0 := NewScrapeConfigQuiet()
 	config1 := NewScrapeConfigQuiet()
 
-	c := NewChapterFromURL("https://www.nginx.com/feed/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://blog.nginx.org/feed", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
 	got := len(c.SubChapters())
-	want := 14
+	want := 10
 
 	if got != want {
 		t.Errorf("got %v, wanted %v", got, want)
@@ -147,14 +147,14 @@ func TestSubChaptersRSS(t *testing.T) {
 func TestSubChaptersSelector(t *testing.T) {
 
 	config0 := NewScrapeConfigQuiet()
-	config0.Selector = "body > aside > p > a"
+	config0.Selector = "section.concrete>article>h2>a"
 
 	config1 := NewScrapeConfigQuiet()
 
-	c := NewChapterFromURL("https://html5example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://12factor.net/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
 	got := len(c.SubChapters())
-	want := 14
+	want := 12
 
 	if got != want {
 		t.Errorf("got %v, wanted %v", got, want)
@@ -165,11 +165,12 @@ func TestSubChaptersSelector(t *testing.T) {
 func TestSubChaptersLimit(t *testing.T) {
 
 	config0 := NewScrapeConfigQuiet()
+	config0.Selector = "section.concrete>article>h2>a"
 	config0.Limit = 1
 
 	config1 := NewScrapeConfigQuiet()
 
-	c := NewChapterFromURL("https://html5example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://12factor.net/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
 	got := len(c.SubChapters())
 	want := 1
@@ -183,14 +184,15 @@ func TestSubChaptersLimit(t *testing.T) {
 func TestSubChaptersLimitOver(t *testing.T) {
 
 	config0 := NewScrapeConfigQuiet()
+	config0.Selector = "section.concrete>article>h2>a"
 	config0.Limit = 15
 
 	config1 := NewScrapeConfigQuiet()
 
-	c := NewChapterFromURL("https://html5example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://12factor.net/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
 	got := len(c.SubChapters())
-	want := 14
+	want := 12
 
 	if got != want {
 		t.Errorf("got %v, wanted %v", got, want)
@@ -201,14 +203,15 @@ func TestSubChaptersLimitOver(t *testing.T) {
 func TestReverse(t *testing.T) {
 
 	config0 := NewScrapeConfigQuiet()
+	config0.Selector = "section.concrete>article>h2>a"
 	config0.Reverse = true
 
 	config1 := NewScrapeConfigQuiet()
 
-	c := NewChapterFromURL("https://html5example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://12factor.net/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
-	got := c.SubChapters()[0].Name()
-	want := "The W3C Markup Validation Service"
+	got := c.SubChapters()[0].URL()
+	want := "https://12factor.net/admin-processes"
 
 	if got != want {
 		t.Errorf("got %v, wanted %v", got, want)
@@ -221,7 +224,7 @@ func TestNotInclude(t *testing.T) {
 	config := NewScrapeConfigQuiet()
 	config.Include = false
 
-	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
+	c := NewChapterFromURL("https://12factor.net/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
 
 	got := c.Content()
 	want := ""

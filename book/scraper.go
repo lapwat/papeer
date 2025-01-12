@@ -242,7 +242,6 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 			content = ""
 			doc.Find("img").Each(func(i int, s *goquery.Selection) {
 				imageTag, _ := goquery.OuterHtml(s)
-				// imageTag = strings.ReplaceAll(imageTag, "\n", "")
 				content += imageTag
 			})
 

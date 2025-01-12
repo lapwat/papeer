@@ -32,7 +32,7 @@ func ToMarkdownString(c chapter) string {
 
 		// url
 		if c.config.PrintURL {
-			markdown += fmt.Sprintf("_Source: %s_\n\n", c.URL())
+			markdown += fmt.Sprintf("_%s_\n\n", c.URL())
 		}
 
 		// convert content to markdown
@@ -82,7 +82,7 @@ func ToHtmlString(c chapter) string {
 
 		// url
 		if c.config.PrintURL {
-			html += fmt.Sprintf("<p><i>Source: %s</i></p>\n", c.URL())
+			html += fmt.Sprintf("<p><i>%s</i></p>\n", c.URL())
 		}
 
 		// content
@@ -177,9 +177,9 @@ func AppendToEpub(e *epub.Epub, c chapter) {
 
 			if c.config.ImagesOnly {
 				imageTag, _ := goquery.OuterHtml(s)
-				content += strings.Replace(imageTag, src, imagePath, 1)
+				content += strings.ReplaceAll(imageTag, src, imagePath)
 			} else {
-				content = strings.Replace(content, src, imagePath, 1)
+				content = strings.ReplaceAll(content, src, imagePath)
 			}
 		})
 
@@ -191,7 +191,7 @@ func AppendToEpub(e *epub.Epub, c chapter) {
 
 		// url
 		if c.config.PrintURL {
-			html += fmt.Sprintf("<p><i>Source: %s</i></p>\n", c.URL())
+			html += fmt.Sprintf("<p><i>%s</i></p>\n", c.URL())
 		}
 
 		// content
