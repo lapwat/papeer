@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -180,6 +181,7 @@ var getCmd = &cobra.Command{
 				if err != nil {
 					log.Fatal(err)
 				}
+				os.Remove(filename)
 
 				fmt.Println(string(bytesRead))
 			} else {
@@ -194,6 +196,7 @@ var getCmd = &cobra.Command{
 			if err != nil {
 				log.Fatal(err)
 			}
+			os.Remove(filename)
 
 			book := make(map[string]interface{})
 			book["name"] = c.Name()
@@ -215,6 +218,7 @@ var getCmd = &cobra.Command{
 				if err != nil {
 					log.Fatal(err)
 				}
+				os.Remove(filename)
 
 				fmt.Println(string(bytesRead))
 			} else {
@@ -230,6 +234,7 @@ var getCmd = &cobra.Command{
 				if err != nil {
 					log.Fatal(err)
 				}
+				os.Remove(filename)
 
 				fmt.Println(string(bytesRead))
 			} else {
@@ -245,6 +250,7 @@ var getCmd = &cobra.Command{
 				if err != nil {
 					log.Fatal(err)
 				}
+				os.Remove(filename)
 
 				fmt.Println(string(bytesRead))
 			} else {
