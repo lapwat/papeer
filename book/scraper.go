@@ -31,18 +31,19 @@ type ScrapeConfig struct {
 	ImagesOnly  bool
 	UseLinkName bool
 	PrintURL    bool
+	UseHeadless bool // Use headless browser for JavaScript-rendered content
 }
 
 func NewScrapeConfig() *ScrapeConfig {
-	return &ScrapeConfig{0, "", false, -1, 0, false, -1, -1, true, false, false, false}
+	return &ScrapeConfig{0, "", false, -1, 0, false, -1, -1, true, false, false, false, false}
 }
 
 func NewScrapeConfigQuiet() *ScrapeConfig {
-	return &ScrapeConfig{0, "", true, -1, 0, false, -1, -1, true, false, false, false}
+	return &ScrapeConfig{0, "", true, -1, 0, false, -1, -1, true, false, false, false, false}
 }
 
 func NewScrapeConfigNoInclude() *ScrapeConfig {
-	return &ScrapeConfig{0, "", false, -1, 0, false, -1, -1, false, false, false, false}
+	return &ScrapeConfig{0, "", false, -1, 0, false, -1, -1, false, false, false, false, false}
 }
 
 func NewScrapeConfigs(selectors []string) []*ScrapeConfig {
@@ -265,7 +266,8 @@ func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig, q
 		log.Fatal(err)
 	}
 
-	links, _, home, err := GetLinks(base, config.Selector, config.Limit, config.Offset, config.Reverse, config.Include)
+	// Use headless browser for JavaScript-rendered content if UseHeadless is set
+	links, _, home, err := GetLinks(base, config.Selector, config.Limit, config.Offset, config.Reverse, config.Include, config.UseHeadless)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -358,9 +360,20 @@ func GetPath(elm *goquery.Selection) string {
 	return join
 }
 
-func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, include bool) ([]link, string, chapter, error) {
+func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, include bool, useHeadless ...bool) ([]link, string, chapter, error) {
 	var links []link
 	var pathMax string
+
+	// Check if we should use headless browser
+	useHeadlessBrowser := false
+	if len(useHeadless) > 0 && useHeadless[0] {
+		useHeadlessBrowser = true
+	}
+
+	// If using headless browser, use the headless scraper
+	if useHeadlessBrowser {
+		return GetLinksWithHeadlessBrowser(url, selector, limit, offset, reverse, include)
+	}
 
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseURL(url.String())

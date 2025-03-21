@@ -1,0 +1,201 @@
+package book
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/chromedp/chromedp"
+)
+
+// createDynamicNavServer creates a test server that serves HTML with JavaScript-rendered navigation links
+func createDynamicNavServer(numLinks int) (*httptest.Server, *url.URL, error) {
+	// Create a test server that serves HTML with JavaScript-rendered content
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// This HTML has a navigation menu that's populated by JavaScript
+		html := fmt.Sprintf(`
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<title>Test Dynamic Navigation</title>
+		</head>
+		<body>
+			<h1>Test Page</h1>
+			<nav class="sidebar" id="sidebar">
+				<!-- This will be populated by JavaScript -->
+			</nav>
+			
+			<script>
+				// Simulate a delay to ensure the test is actually waiting for JS execution
+				setTimeout(function() {
+					// Create navigation links dynamically
+					const sidebar = document.getElementById('sidebar');
+					
+					// Add %d links to the sidebar
+					for (let i = 1; i <= %d; i++) {
+						const link = document.createElement('a');
+						link.href = '/chapter/' + i;
+						link.textContent = 'Chapter ' + i;
+						sidebar.appendChild(link);
+						
+						// Add a line break for readability
+						sidebar.appendChild(document.createElement('br'));
+					}
+				}, 500); // 500ms delay
+			</script>
+		</body>
+		</html>
+		`, numLinks, numLinks)
+		fmt.Fprintln(w, html)
+	}))
+
+	// Parse the test server URL
+	serverURL, err := url.Parse(ts.URL)
+	if err != nil {
+		ts.Close()
+		return nil, nil, err
+	}
+
+	return ts, serverURL, nil
+}
+
+// filterChapterLinks filters links to find those containing "Chapter" in the text
+func filterChapterLinks(links []link) []link {
+	var chapterLinks []link
+	for _, l := range links {
+		if strings.Contains(l.Text, "Chapter") {
+			chapterLinks = append(chapterLinks, l)
+		}
+	}
+	return chapterLinks
+}
+
+// verifyChapterLinks verifies that the links match the expected pattern
+func verifyChapterLinks(t *testing.T, links []link, expectedCount int) {
+	// Verify that we got the expected number of chapter links
+	if len(links) != expectedCount {
+		t.Errorf("Expected %d chapter links, got %d", expectedCount, len(links))
+	}
+
+	// Verify the content of the links
+	for i, link := range links {
+		expectedHref := fmt.Sprintf("/chapter/%d", i+1)
+		expectedText := fmt.Sprintf("Chapter %d", i+1)
+		
+		if !strings.HasSuffix(link.Href, expectedHref) {
+			t.Errorf("Link %d: expected href to end with %s, got %s", i+1, expectedHref, link.Href)
+		}
+		
+		if link.Text != expectedText {
+			t.Errorf("Link %d: expected text %s, got %s", i+1, expectedText, link.Text)
+		}
+	}
+}
+
+// TestHeadlessScraper tests the direct headless browser scraping functionality
+func TestHeadlessScraper(t *testing.T) {
+	// Skip this test in CI environments or when running short tests
+	if testing.Short() {
+		t.Skip("skipping headless browser test in short mode")
+	}
+
+	// Create a test server with 5 dynamic links
+	ts, serverURL, err := createDynamicNavServer(5)
+	if err != nil {
+		t.Fatalf("Failed to create test server: %v", err)
+	}
+	defer ts.Close()
+
+	// Test the headless scraper
+	links, _, _, err := GetLinksWithHeadlessBrowser(serverURL, "nav.sidebar a", -1, 0, false, true)
+	if err != nil {
+		t.Fatalf("GetLinksWithHeadlessBrowser failed: %v", err)
+	}
+
+	// Filter and verify links
+	chapterLinks := filterChapterLinks(links)
+	verifyChapterLinks(t, chapterLinks, 5)
+}
+
+// TestHeadlessScraperIntegration tests the integration between the regular scraper and headless scraper
+func TestHeadlessScraperIntegration(t *testing.T) {
+	// Skip this test in CI environments or when running short tests
+	if testing.Short() {
+		t.Skip("skipping headless browser integration test in short mode")
+	}
+
+	// Create a test server with 3 dynamic links
+	ts, serverURL, err := createDynamicNavServer(3)
+	if err != nil {
+		t.Fatalf("Failed to create test server: %v", err)
+	}
+	defer ts.Close()
+
+	// Test the regular GetLinks function with useHeadless=true
+	links, _, _, err := GetLinks(serverURL, "nav.sidebar a", -1, 0, false, true, true)
+	if err != nil {
+		t.Fatalf("GetLinks with headless=true failed: %v", err)
+	}
+
+	// Filter and verify links
+	chapterLinks := filterChapterLinks(links)
+	verifyChapterLinks(t, chapterLinks, 3)
+}
+
+// TestStaticScraperWithJavaScript verifies that the static scraper fails to extract JavaScript-generated links
+func TestStaticScraperWithJavaScript(t *testing.T) {
+	// Skip this test in CI environments or when running short tests
+	if testing.Short() {
+		t.Skip("skipping static scraper test in short mode")
+	}
+
+	// Create a test server with 3 dynamic links
+	ts, serverURL, err := createDynamicNavServer(3)
+	if err != nil {
+		t.Fatalf("Failed to create test server: %v", err)
+	}
+	defer ts.Close()
+
+	// Test the regular GetLinks function with useHeadless=false (static scraper)
+	// We expect this to fail because the links are generated by JavaScript
+	_, _, _, err = GetLinks(serverURL, "nav.sidebar a", -1, 0, false, true, false)
+	if err == nil {
+		t.Errorf("Expected static scraper to fail with JavaScript-rendered content, but it succeeded")
+	} else {
+		// Verify that the error message indicates no links were found
+		expectedErrMsg := "no link found for selector: nav.sidebar a"
+		if err.Error() != expectedErrMsg {
+			t.Errorf("Expected error message '%s', got '%s'", expectedErrMsg, err.Error())
+		}
+	}
+
+	// Now test with headless=true to verify it works with JavaScript-rendered content
+	headlessLinks, _, _, err := GetLinks(serverURL, "nav.sidebar a", -1, 0, false, true, true)
+	if err != nil {
+		t.Fatalf("GetLinks with headless=true failed: %v", err)
+	}
+
+	// Filter and verify links
+	headlessChapterLinks := filterChapterLinks(headlessLinks)
+	verifyChapterLinks(t, headlessChapterLinks, 3)
+}
+
+// isChromiumAvailable checks if Chrome/Chromium is available for headless browser testing
+func isChromiumAvailable() bool {
+	// Try to allocate a browser context
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+	
+	// Set a short timeout
+	ctx, cancel = context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	
+	// Try to navigate to about:blank
+	err := chromedp.Run(ctx, chromedp.Navigate("about:blank"))
+	return err == nil
+}

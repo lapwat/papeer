@@ -35,6 +35,7 @@ type GetOptions struct {
 	include     bool
 	useLinkName bool
 	printURL    bool
+	useHeadless bool // Use headless browser for JavaScript-rendered content
 }
 
 var getOpts *GetOptions
@@ -61,6 +62,7 @@ func init() {
 	getCmd.Flags().IntVarP(&getOpts.threads, "threads", "t", -1, "download concurrency, use with depth/selector")
 	getCmd.Flags().BoolVarP(&getOpts.include, "include", "i", false, "include URL as first chapter, use with depth/selector")
 	getCmd.Flags().BoolVarP(&getOpts.useLinkName, "use-link-name", "", false, "use link name for chapter title")
+	getCmd.Flags().BoolVarP(&getOpts.useHeadless, "headless", "", false, "use headless browser for JavaScript-rendered content")
 
 	rootCmd.AddCommand(getCmd)
 }
@@ -151,6 +153,7 @@ var getCmd = &cobra.Command{
 			config.Include = getOpts.include
 			config.UseLinkName = getOpts.useLinkName
 			config.PrintURL = getOpts.printURL
+			config.UseHeadless = getOpts.useHeadless
 
 			// do not use link name for root level as there is not parent link
 			if index == 0 {

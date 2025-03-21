@@ -75,6 +75,7 @@ You can chain URLs.
 -a, --author string      book author
 -f, --format string      file format [md, html, epub, mobi] (default "md")
 -h, --help               help for get
+    --headless           use headless browser for JavaScript-rendered content
     --images             retrieve images only
 -n, --name string        book name (default: page title)
     --output string      file name (default: book name)
@@ -167,6 +168,16 @@ Using this option will include all intermediary levels into the book.
 By default, it will grab all the pages asynchonously.
 
 Use those options to tweak the synchronicity of scrape requests.
+
+**`headless`**
+
+Some websites use JavaScript to render their content, including navigation menus. Use this option to enable a headless browser for scraping JavaScript-rendered content.
+
+```sh
+papeer get https://my-js-website.com/ --headless --selector="nav.sidebar a" --format=epub
+```
+
+This is particularly useful for websites like the Rust Programming Language book, where the navigation sidebar is rendered using JavaScript.
 
 **Automatic table of contents extraction**
 
