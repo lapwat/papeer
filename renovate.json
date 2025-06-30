@@ -5,11 +5,11 @@
     "abandonments:recommended",
     ":automergeAll",
     ":automergeBranch",
-    ":skipStatusChecks",
+    ":skipStatusChecks"
   ],
   "dependencyDashboardOSVVulnerabilitySummary": "all",
   "osvVulnerabilityAlerts": true,
   "vulnerabilityAlerts": {
-    "enabled": true,
-  },
+    "enabled": true
+  }
 }
