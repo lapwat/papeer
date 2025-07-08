@@ -14,7 +14,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.18
+        go-version: 1.23
     - name: Install kindlegen
       run: |
         curl -L https://github.com/lapwat/papeer/releases/download/kindlegen/kindlegen_linux_2.6_i386_v2_9.tar.gz > kindlegen.tar.gz
