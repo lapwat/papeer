@@ -3,6 +3,7 @@
   "extends": [
     "config:recommended",
     "abandonments:recommended",
+    "group:all",
     ":automergeAll",
     ":automergeBranch",
     ":skipStatusChecks"
