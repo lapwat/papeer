@@ -2,17 +2,17 @@ module github.com/lapwat/papeer
 
 go 1.23.0
 
-toolchain go1.24.5
+toolchain go1.25.1
 
 require (
-	github.com/JohannesKaufmann/html-to-markdown/v2 v2.3.3
-	github.com/JohannesKaufmann/html-to-markdown/v2 v2.3.3
+	github.com/JohannesKaufmann/html-to-markdown v1.6.0
+	github.com/JohannesKaufmann/html-to-markdown/v2 v2.4.0
 	github.com/bmaupin/go-epub v1.1.0
 	github.com/elazarl/goproxy v1.7.2
 	github.com/go-shiori/go-readability v0.0.0-20250217085726-9f5bf5ca7612
-	github.com/jedib0t/go-pretty/v6 v6.6.7
+	github.com/jedib0t/go-pretty/v6 v6.6.8
 	github.com/mmcdole/gofeed v1.3.0
-	github.com/spf13/cobra v1.9.1
+	github.com/spf13/cobra v1.10.1
 )
 
 require (
@@ -47,14 +47,14 @@ require (
 	github.com/nlnwa/whatwg-url v0.6.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
-	github.com/sebdah/goldie/v2 v2.5.5 // indirect
-	github.com/spf13/pflag v1.0.6 // indirect
+	github.com/sebdah/goldie/v2 v2.7.1 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
-	github.com/yuin/goldmark v1.7.11 // indirect
-	golang.org/x/net v0.41.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
+	github.com/yuin/goldmark v1.7.13 // indirect
+	golang.org/x/net v0.43.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 )
