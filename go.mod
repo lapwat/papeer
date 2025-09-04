@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.25.1
 
 require (
-	github.com/JohannesKaufmann/html-to-markdown v1.6.0
+	github.com/JohannesKaufmann/html-to-markdown/v2 v2.4.0
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.4.0
 	github.com/bmaupin/go-epub v1.1.0
 	github.com/elazarl/goproxy v1.7.2
