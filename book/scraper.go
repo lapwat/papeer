@@ -147,7 +147,7 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 			log.Fatal(err)
 		}
 
-		// init progess bar
+		// init progress bar
 		var p progress
 		if config.Quiet == false {
 			p = NewProgress(links, name, config.Depth)

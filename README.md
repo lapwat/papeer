@@ -85,7 +85,7 @@ You can chain URLs.
 
 **Display the table of contents**
 
-Before scraping a whole website, it is a good idea to use the `list` command. This command is like a _dry run_, **which lets you vizualize the content before retrieving it**.
+Before scraping a whole website, it is a good idea to use the `list` command. This command is like a _dry run_, **which lets you visualize the content before retrieving it**.
 
 You can use several options to customize the table of contents extraction, such as `selector`, `limit`, `offset`, `reverse` and `include`. Type `papeer list --help` for more information about those options.
 
@@ -156,7 +156,7 @@ If this option is not specified, `papeer` will grab only the one page.
 
 If this option is specified, `papeer` will select the links (a HTML tag) present on the main page, then grab each one of them.
 
-You can chain this option to grab several level of pages with diferent selectors for each level.
+You can chain this option to grab several level of pages with different selectors for each level.
 
 **`include`**
 
@@ -164,7 +164,7 @@ Using this option will include all intermediary levels into the book.
 
 **`delay` `threads`**
 
-By default, it will grab all the pages asynchonously.
+By default, it will grab all the pages asynchronously.
 
 Use those options to tweak the synchronicity of scrape requests.
 

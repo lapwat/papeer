@@ -115,12 +115,13 @@ func TestContentImagesOnly(t *testing.T) {
 func TestSubChapters(t *testing.T) {
 
 	config0 := NewScrapeConfigQuiet()
+	config0.Selector = ".concrete>article>h2>a"
 	config1 := NewScrapeConfigQuiet()
 
 	c := NewChapterFromURL("https://12factor.net/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 
 	got := len(c.SubChapters())
-	want := 21
+	want := 12
 
 	if got != want {
 		t.Errorf("got %v, wanted %v", got, want)
