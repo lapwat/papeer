@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	md "github.com/JohannesKaufmann/html-to-markdown"
+	md "github.com/JohannesKaufmann/html-to-markdown/v2"
 	"github.com/elazarl/goproxy"
 	readability "github.com/go-shiori/go-readability"
 	"github.com/spf13/cobra"
@@ -64,7 +64,7 @@ var proxyCmd = &cobra.Command{
 
 			if proxyOpts.output == "md" {
 				// convert content to markdown
-				content, err = md.NewConverter("", true, nil).ConvertString(content)
+				content, err = md.ConvertString(content)
 				if err != nil {
 					log.Fatal(err)
 				}

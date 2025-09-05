@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	md "github.com/JohannesKaufmann/html-to-markdown"
+	md "github.com/JohannesKaufmann/html-to-markdown/v2"
 	"github.com/PuerkitoBio/goquery"
 	epub "github.com/bmaupin/go-epub"
 	"github.com/microcosm-cc/bluemonday"
@@ -38,7 +38,7 @@ func ToMarkdownString(c chapter) string {
 		}
 
 		// convert content to markdown
-		content, err := md.NewConverter("", true, nil).ConvertString(c.Content())
+		content, err := md.ConvertString(c.Content())
 		if err != nil {
 			log.Fatal(err)
 		}
