@@ -63,7 +63,7 @@ func ToMarkdown(c chapter, filename string) string {
 	// write to file
 	f, err := os.Create(filename)
 	if err != nil {
-			log.Fatal(err)
+		log.Fatal(err)
 	}
 	_, err2 := f.WriteString(markdown)
 	if err2 != nil {
