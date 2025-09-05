@@ -7,6 +7,10 @@ test:
 install:
 	go install
 
+update:
+	go get -u ./...
+	go mod tidy
+
 clean:
 	find . -maxdepth 1 -name '*.md' -not -name 'README.md' -delete
 	find . -maxdepth 1 -name '*.epub' -delete
