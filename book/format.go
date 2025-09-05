@@ -2,6 +2,7 @@ package book
 
 import (
 	"fmt"
+	"html"
 	"log"
 	"os"
 	"os/exec"
@@ -10,6 +11,7 @@ import (
 	md "github.com/JohannesKaufmann/html-to-markdown"
 	"github.com/PuerkitoBio/goquery"
 	epub "github.com/bmaupin/go-epub"
+	"github.com/microcosm-cc/bluemonday"
 )
 
 func Filename(name string) string {
@@ -61,7 +63,7 @@ func ToMarkdown(c chapter, filename string) string {
 	// write to file
 	f, err := os.Create(filename)
 	if err != nil {
-		log.Fatal(err)
+			log.Fatal(err)
 	}
 	_, err2 := f.WriteString(markdown)
 	if err2 != nil {
@@ -73,28 +75,28 @@ func ToMarkdown(c chapter, filename string) string {
 }
 
 func ToHtmlString(c chapter) string {
-	html := ""
+	htmlContent := ""
 
 	// chapter content
 	if c.config.Include {
 		// title
-		html += fmt.Sprintf("<h1>%s</h1>\n", c.Name())
+		htmlContent += fmt.Sprintf("<h1>%s</h1>\n", html.EscapeString(c.Name()))
 
 		// url
 		if c.config.PrintURL {
-			html += fmt.Sprintf("<p><i>%s</i></p>\n", c.URL())
+			htmlContent += fmt.Sprintf("<p><i>%s</i></p>\n", html.EscapeString(c.URL()))
 		}
 
 		// content
-		html += c.Content()
+		htmlContent += c.Content()
 	}
 
 	// subchapters content
 	for _, sc := range c.SubChapters() {
-		html += ToHtmlString(sc)
+		htmlContent += ToHtmlString(sc)
 	}
 
-	return html
+	return htmlContent
 }
 
 func ToHtml(c chapter, filename string) string {
@@ -125,7 +127,11 @@ func ToEpub(c chapter, filename string) string {
 
 	// init ebook
 	e := epub.NewEpub(c.Name())
-	e.SetAuthor(c.Author())
+	author := c.Author()
+	if author == "" {
+		author = "Unknown Author"
+	}
+	e.SetAuthor(author)
 
 	// append table of content
 	if len(c.SubChapters()) > 1 {
@@ -155,16 +161,18 @@ func ToEpub(c chapter, filename string) string {
 
 func AppendToEpub(e *epub.Epub, c chapter) {
 	content := ""
+	p := bluemonday.UGCPolicy()
+	safeHTML := p.Sanitize(c.Content())
 
 	// chapter content
 	if c.config.Include {
 
 		if c.config.ImagesOnly == false {
-			content = c.Content()
+			content = safeHTML
 		}
 
 		// parse content
-		doc, err := goquery.NewDocumentFromReader(strings.NewReader(c.Content()))
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(safeHTML))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -175,6 +183,10 @@ func AppendToEpub(e *epub.Epub, c chapter) {
 			src = strings.Split(src, "?")[0] // remove query part
 			imagePath, _ := e.AddImage(src, "")
 
+			// Remove or fix invalid width/height attributes
+			s.RemoveAttr("width")
+			s.RemoveAttr("height")
+
 			if c.config.ImagesOnly {
 				imageTag, _ := goquery.OuterHtml(s)
 				content += strings.ReplaceAll(imageTag, src, imagePath)
@@ -183,22 +195,22 @@ func AppendToEpub(e *epub.Epub, c chapter) {
 			}
 		})
 
-		html := ""
+		htmlContent := ""
 		// add title only if ImagesOnly = false
 		if c.config.ImagesOnly == false {
-			html += fmt.Sprintf("<h1>%s</h1>\n", c.Name())
+			htmlContent += fmt.Sprintf("<h1>%s</h1>\n", html.EscapeString(c.Name()))
 		}
 
 		// url
 		if c.config.PrintURL {
-			html += fmt.Sprintf("<p><i>%s</i></p>\n", c.URL())
+			htmlContent += fmt.Sprintf("<p><i>%s</i></p>\n", html.EscapeString(c.URL()))
 		}
 
 		// content
-		html += content
+		htmlContent += content
 
 		//  write to epub file
-		_, err = e.AddSection(html, c.Name(), "", "")
+		_, err = e.AddSection(htmlContent, c.Name(), "", "")
 		if err != nil {
 			log.Fatal(err)
 		}
