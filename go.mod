@@ -2,7 +2,7 @@ module github.com/lapwat/papeer
 
 go 1.23.0
 
-toolchain go1.25.1
+toolchain go1.25.2
 
 require (
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.4.0
