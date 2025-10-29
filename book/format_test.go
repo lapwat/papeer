@@ -22,7 +22,7 @@ func TestToMarkdownString(t *testing.T) {
 	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 
 	got := ToMarkdownString(c)
-	want := "Example Domain\n==============\n\nThis domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.\n\n[More information...](https://www.iana.org/domains/example)\n\n\n"
+	want := "Example Domain\n==============\n\nThis domain is for use in documentation examples without needing permission. Avoid use in operations.\n\n[Learn more](https://iana.org/domains/example)\n\n\n"
 
 	if got != want {
 		t.Errorf("got %q, wanted %q", got, want)
@@ -38,7 +38,7 @@ func TestToMarkdownPrintURL(t *testing.T) {
 	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
 
 	got := ToMarkdownString(c)
-	want := "Example Domain\n==============\n\n_https://example.com/_\n\nThis domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.\n\n[More information...](https://www.iana.org/domains/example)\n\n\n"
+	want := "Example Domain\n==============\n\n_https://example.com/_\n\nThis domain is for use in documentation examples without needing permission. Avoid use in operations.\n\n[Learn more](https://iana.org/domains/example)\n\n\n"
 
 	if got != want {
 		t.Errorf("got %v, wanted %v", got, want)
@@ -83,7 +83,7 @@ func TestToHtmlString(t *testing.T) {
 	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{NewScrapeConfigQuiet()}, 0, func(index int, name string) {})
 
 	got := ToHtmlString(c)
-	want := "<h1>Example Domain</h1>\n<div>\n    \n    <p>This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.</p>\n    <p><a href=\"https://www.iana.org/domains/example\">More information...</a></p>\n</div>"
+	want := "<h1>Example Domain</h1>\n<div><p>This domain is for use in documentation examples without needing permission. Avoid use in operations.</p><p><a href=\"https://iana.org/domains/example\">Learn more</a></p></div>"
 
 	if got != want {
 		t.Errorf("got %q, wanted %q", got, want)
@@ -99,7 +99,7 @@ func TestToHtmlPrintURL(t *testing.T) {
 	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
 
 	got := ToHtmlString(c)
-	want := "<h1>Example Domain</h1>\n<p><i>https://example.com/</i></p>\n<div>\n    \n    <p>This domain is for use in illustrative examples in documents. You may use this\n    domain in literature without prior coordination or asking for permission.</p>\n    <p><a href=\"https://www.iana.org/domains/example\">More information...</a></p>\n</div>"
+	want := "<h1>Example Domain</h1>\n<p><i>https://example.com/</i></p>\n<div><p>This domain is for use in documentation examples without needing permission. Avoid use in operations.</p><p><a href=\"https://iana.org/domains/example\">Learn more</a></p></div>"
 
 	if got != want {
 		t.Errorf("got %q, wanted %q", got, want)
