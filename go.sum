@@ -45,6 +45,8 @@ github.com/go-shiori/dom v0.0.0-20230515143342-73569d674e1c h1:wpkoddUomPfHiOziH
 github.com/go-shiori/dom v0.0.0-20230515143342-73569d674e1c/go.mod h1:oVDCh3qjJMLVUSILBRwrm+Bc6RNXGZYtoh9xdvf1ffM=
 github.com/go-shiori/go-readability v0.0.0-20250217085726-9f5bf5ca7612 h1:BYLNYdZaepitbZreRIa9xeCQZocWmy/wj4cGIH0qyw0=
 github.com/go-shiori/go-readability v0.0.0-20250217085726-9f5bf5ca7612/go.mod h1:wgqthQa8SAYs0yyljVeCOQlZ027VW5CmLsbi9jWC08c=
+github.com/go-shiori/go-readability v0.0.0-20251205110129-5db1dc9836f0 h1:A3B75Yp163FAIf9nLlFMl4pwIj+T3uKxfI7mbvvY2Ls=
+github.com/go-shiori/go-readability v0.0.0-20251205110129-5db1dc9836f0/go.mod h1:suxK0Wpz4BM3/2+z1mnOVTIWHDiMCIOGoKDCRumSsk0=
 github.com/gobwas/glob v0.2.3 h1:A4xDbljILXROh+kObIiy5kIaPYD8e96x1tgBhUI5J+Y=
 github.com/gobwas/glob v0.2.3/go.mod h1:d3Ez4x06l9bZtSvzIay5+Yzi0fmZzPgnTbPcKjJAkT8=
 github.com/gocolly/colly/v2 v2.2.0 h1:FQGxcqvTdFAvOpMRhk52o20Qsf6KtRU5HSf0bITS38I=
