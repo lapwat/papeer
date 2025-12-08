@@ -10,7 +10,7 @@ import (
 
 	md "github.com/JohannesKaufmann/html-to-markdown/v2"
 	"github.com/PuerkitoBio/goquery"
-	epub "github.com/bmaupin/go-epub"
+	epub "github.com/go-shiori/go-epub"
 	"github.com/microcosm-cc/bluemonday"
 )
 
@@ -126,7 +126,11 @@ func ToEpub(c chapter, filename string) string {
 	}
 
 	// init ebook
-	e := epub.NewEpub(c.Name())
+	e, err := epub.NewEpub(c.Name())
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	author := c.Author()
 	if author == "" {
 		author = "Unknown Author"
@@ -151,7 +155,7 @@ func ToEpub(c chapter, filename string) string {
 
 	AppendToEpub(e, c)
 
-	err := e.Write(filename)
+	err = e.Write(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
