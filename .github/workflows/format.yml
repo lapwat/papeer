@@ -7,9 +7,9 @@ on:
 
 jobs:
   format:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v6.0.1
     - name: Check formatting
       run: if [[ -n "$(gofmt -l .)" ]]; then exit 1; fi
