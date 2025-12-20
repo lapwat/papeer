@@ -34,6 +34,10 @@ func (c chapter) Author() string {
 	return c.author
 }
 
+func (c *chapter) SetAuthor(author string) {
+	c.author = author
+}
+
 func (c chapter) Content() string {
 	return c.content
 }

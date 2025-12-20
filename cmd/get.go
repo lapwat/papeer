@@ -172,6 +172,7 @@ var getCmd = &cobra.Command{
 			c.AddSubChapter(newChapter)
 		}
 		c.SetName(c.SubChapters()[0].Name())
+		c.SetAuthor(c.SubChapters()[0].Author())
 
 		if getOpts.Format == "md" {
 			filename := book.ToMarkdown(c, getOpts.output)
@@ -200,6 +201,7 @@ var getCmd = &cobra.Command{
 
 			book := make(map[string]interface{})
 			book["name"] = c.Name()
+			book["author"] = c.Author()
 			book["content"] = string(bytesRead)
 
 			bookJson, err := json.Marshal(book)

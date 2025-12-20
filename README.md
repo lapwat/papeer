@@ -73,12 +73,23 @@ You can chain URLs.
 
 ```sh
 -a, --author string      book author
--f, --format string      file format [md, html, epub, mobi] (default "md")
+    --delay int          time in milliseconds to wait before downloading next chapter, use with depth/selector (default -1)
+-d, --depth int          scraping depth
+-f, --format string      file format [md, json, html, epub, mobi] (default "md")
 -h, --help               help for get
     --images             retrieve images only
+-i, --include            include URL as first chapter, use with depth/selector
+-l, --limit int          limit number of chapters, use with depth/selector (default -1)
 -n, --name string        book name (default: page title)
+-o, --offset int         skip first chapters, use with depth/selector
     --output string      file name (default: book name)
+    --print-url          print url after chapter title
+-q, --quiet              hide progress bar
+-r, --reverse            reverse chapter order
+-s, --selector strings   table of contents CSS selector
     --stdout             print to standard output
+-t, --threads int        download concurrency, use with depth/selector (default -1)
+    --use-link-name      use link name for chapter title
 ```
 
 ### Scrape a whole website recursively
