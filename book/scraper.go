@@ -110,8 +110,19 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 		log.Fatal(err)
 	}
 
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// set custom header
+	req.Header.Set("User-Agent", "papeer")
+
+	// execute request
+	client := &http.Client{}
+	response, err := client.Do(req)
+
 	// get page body
-	response, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
