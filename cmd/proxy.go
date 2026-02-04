@@ -1,15 +1,16 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strings"
 
+	readability "codeberg.org/readeck/go-readability/v2"
 	md "github.com/JohannesKaufmann/html-to-markdown/v2"
 	"github.com/elazarl/goproxy"
-	readability "github.com/go-shiori/go-readability"
 	"github.com/spf13/cobra"
 )
 
@@ -60,7 +61,13 @@ var proxyCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 
-			content := article.Content
+			var buffer bytes.Buffer
+			err = article.RenderHTML(&buffer)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			content := buffer.String()
 
 			if proxyOpts.output == "md" {
 				// convert content to markdown

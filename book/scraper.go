@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
+	readability "codeberg.org/readeck/go-readability/v2"
 	"github.com/PuerkitoBio/goquery"
-	readability "github.com/go-shiori/go-readability"
 	colly "github.com/gocolly/colly/v2"
 	"github.com/mmcdole/gofeed"
 )
@@ -143,7 +143,7 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 
 	name := linkName
 	if config.UseLinkName == false {
-		name = article.Title
+		name = article.Title()
 
 		// notify progressbar with new name
 		updateProgressBarName(index, name)
@@ -231,8 +231,14 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 		// - we include this level
 		// - we use the page name
 
+		var buffer bytes.Buffer
+		err := article.RenderHTML(&buffer)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		// parse HTML
-		doc, err := goquery.NewDocumentFromReader(strings.NewReader(article.Content))
+		doc, err := goquery.NewDocumentFromReader(&buffer)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -267,7 +273,7 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 
 	}
 
-	return chapter{url, string(body), name, article.Byline, content, subchapters, config}
+	return chapter{url, string(body), name, article.Byline(), content, subchapters, config}
 }
 
 func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig, quiet bool) ([]chapter, chapter) {
