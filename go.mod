@@ -2,10 +2,10 @@ module github.com/lapwat/papeer
 
 go 1.24.0
 
-toolchain go1.25.6
+toolchain go1.25.7
 
 require (
-	codeberg.org/readeck/go-readability/v2 v2.1.0
+	codeberg.org/readeck/go-readability/v2 v2.1.1
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.5.0
 	github.com/elazarl/goproxy v1.8.1
 	github.com/go-shiori/go-epub v1.2.1

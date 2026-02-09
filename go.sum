@@ -1,5 +1,7 @@
 codeberg.org/readeck/go-readability/v2 v2.1.0 h1:1T72CzXu4nrZr/DA1A5fAkaVsTMx/LSALPkSSZY+NWI=
 codeberg.org/readeck/go-readability/v2 v2.1.0/go.mod h1:x3WG9GpWWnkRb7ajP1NmOKSHbafxNUb736lrDZXeXrs=
+codeberg.org/readeck/go-readability/v2 v2.1.1 h1:1tEwxFuUqDRP5JABzDHXGWRx5p9S7TElS3U8qQwXC5Y=
+codeberg.org/readeck/go-readability/v2 v2.1.1/go.mod h1:x3WG9GpWWnkRb7ajP1NmOKSHbafxNUb736lrDZXeXrs=
 github.com/JohannesKaufmann/dom v0.2.0 h1:1bragmEb19K8lHAqgFgqCpiPCFEZMTXzOIEjuxkUfLQ=
 github.com/JohannesKaufmann/dom v0.2.0/go.mod h1:57iSUl5RKric4bUkgos4zu6Xt5LMHUnw3TF1l5CbGZo=
 github.com/JohannesKaufmann/html-to-markdown/v2 v2.5.0 h1:mklaPbT4f/EiDr1Q+zPrEt9lgKAkVrIBtWf33d9GpVA=
