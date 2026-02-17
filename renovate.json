@@ -6,7 +6,8 @@
     "group:all",
     ":automergeAll",
     ":automergeBranch",
-    ":skipStatusChecks"
+    ":skipStatusChecks",
+    ":pinVersions"
   ],
   "dependencyDashboardOSVVulnerabilitySummary": "all",
   "osvVulnerabilityAlerts": true,
