@@ -2,7 +2,7 @@ module github.com/lapwat/papeer
 
 go 1.24.0
 
-toolchain go1.26.0
+toolchain go1.26.1
 
 require (
 	codeberg.org/readeck/go-readability/v2 v2.1.1
