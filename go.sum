@@ -37,6 +37,8 @@ github.com/elazarl/goproxy v1.8.1 h1:/qGpPJGgIPOTZ7IoIQvjavocp//qYSe9LQnIGCgRY5k
 github.com/elazarl/goproxy v1.8.1/go.mod h1:b5xm6W48AUHNpRTCvlnd0YVh+JafCCtsLsJZvvNTz+E=
 github.com/elazarl/goproxy v1.8.2 h1:keGt9KHFAnrXFEctQuOF9NRxKFCXtd5cQg5PrBdeVW4=
 github.com/elazarl/goproxy v1.8.2/go.mod h1:b5xm6W48AUHNpRTCvlnd0YVh+JafCCtsLsJZvvNTz+E=
+github.com/elazarl/goproxy v1.8.3 h1:XhiZpzW0NvsGOqSv/F3v4+1F29842yYaJNN+In5Fnuc=
+github.com/elazarl/goproxy v1.8.3/go.mod h1:b5xm6W48AUHNpRTCvlnd0YVh+JafCCtsLsJZvvNTz+E=
 github.com/gabriel-vasile/mimetype v1.4.10 h1:zyueNbySn/z8mJZHLt6IPw0KoZsiQNszIpU+bX4+ZK0=
 github.com/gabriel-vasile/mimetype v1.4.10/go.mod h1:d+9Oxyo1wTzWdyVUPMmXFvp4F9tea18J8ufA774AB3s=
 github.com/go-shiori/dom v0.0.0-20230515143342-73569d674e1c h1:wpkoddUomPfHiOziHZixGO5ZBS73cKqVzZipfrLmO1w=
