@@ -3,7 +3,9 @@ package book
 import (
 	"fmt"
 	"html"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"strings"
@@ -185,7 +187,36 @@ func AppendToEpub(e *epub.Epub, c chapter) {
 		doc.Find("img").Each(func(i int, s *goquery.Selection) {
 			src, _ := s.Attr("src")
 			src = strings.Split(src, "?")[0] // remove query part
-			imagePath, _ := e.AddImage(src, "")
+
+			// prepare request
+			req, err := http.NewRequest("GET", src, nil)
+			if err != nil {
+				log.Fatal(err)
+			}
+			req.Header.Set("User-Agent", "papeer")
+
+			// make request
+			client := &http.Client{}
+			response, err := client.Do(req)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer response.Body.Close()
+
+			// create temp file
+			file, err := os.CreateTemp("", "papeer-image*.jpg") // works for jpg and png
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer file.Close()
+
+			// store image in temp file
+			_, err = io.Copy(file, response.Body)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			imagePath, _ := e.AddImage(file.Name(), "")
 
 			// Remove or fix invalid width/height attributes
 			s.RemoveAttr("width")
