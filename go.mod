@@ -7,7 +7,7 @@ toolchain go1.26.3
 require (
 	codeberg.org/readeck/go-readability/v2 v2.1.1
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.5.1
-	github.com/elazarl/goproxy v1.8.3
+	github.com/elazarl/goproxy v1.8.4
 	github.com/go-shiori/go-epub v1.2.1
 	github.com/jedib0t/go-pretty/v6 v6.7.10
 	github.com/microcosm-cc/bluemonday v1.0.27
