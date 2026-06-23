@@ -2,6 +2,7 @@ package book
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -14,6 +15,7 @@ import (
 
 	readability "codeberg.org/readeck/go-readability/v2"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/chromedp/chromedp"
 	colly "github.com/gocolly/colly/v2"
 	"github.com/mmcdole/gofeed"
 )
@@ -31,18 +33,19 @@ type ScrapeConfig struct {
 	ImagesOnly  bool
 	UseLinkName bool
 	PrintURL    bool
+	Browser     bool
 }
 
 func NewScrapeConfig() *ScrapeConfig {
-	return &ScrapeConfig{0, "", false, -1, 0, false, -1, -1, true, false, false, false}
+	return &ScrapeConfig{0, "", false, -1, 0, false, -1, -1, true, false, false, false, false}
 }
 
 func NewScrapeConfigQuiet() *ScrapeConfig {
-	return &ScrapeConfig{0, "", true, -1, 0, false, -1, -1, true, false, false, false}
+	return &ScrapeConfig{0, "", true, -1, 0, false, -1, -1, true, false, false, false, false}
 }
 
 func NewScrapeConfigNoInclude() *ScrapeConfig {
-	return &ScrapeConfig{0, "", false, -1, 0, false, -1, -1, false, false, false, false}
+	return &ScrapeConfig{0, "", false, -1, 0, false, -1, -1, false, false, false, false, false}
 }
 
 func NewScrapeConfigs(selectors []string) []*ScrapeConfig {
@@ -102,37 +105,94 @@ func NewScrapeConfigFake() *ScrapeConfig {
 	return config
 }
 
-func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int, updateProgressBarName func(index int, name string)) chapter {
-	config := configs[0]
+var (
+	browserCtx  context.Context
+	browserOnce sync.Once
+)
 
-	base, err := urllib.Parse(url)
-	if err != nil {
-		log.Fatal(err)
-	}
+func getBrowserContext() context.Context {
+	browserOnce.Do(func() {
+		allocCtx, _ := chromedp.NewExecAllocator(context.Background(),
+			append(
+				chromedp.DefaultExecAllocatorOptions[:],
+				chromedp.NoSandbox,
+				chromedp.UserAgent("papeer"),
+			)...,
+		)
+		browserCtx, _ = chromedp.NewContext(allocCtx)
+		chromedp.Run(browserCtx)
+	})
+	return browserCtx
+}
 
+func fetchHTMLStd(url string) (io.ReadCloser, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	req.Header.Set("User-Agent", "papeer")
 
-	// execute request
 	client := &http.Client{}
-	response, err := client.Do(req)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
+}
+
+func fetchHTMLWithBrowser(url string) (io.ReadCloser, error) {
+	ctx, cancel := chromedp.NewContext(getBrowserContext())
+	defer cancel()
+
+	ctx, cancel = context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	var htmlContent string
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(url),
+		chromedp.WaitReady("body"),
+		chromedp.OuterHTML("html", &htmlContent),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("headless browser: %w", err)
+	}
+
+	return io.NopCloser(strings.NewReader(htmlContent)), nil
+}
+
+func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int, updateProgressBarName func(index int, name string)) chapter {
+	config := configs[0]
+
+	baseUrl, err := urllib.Parse(url)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer response.Body.Close()
+
+	// fetch content
+	var response io.ReadCloser
+	if config.Browser {
+		response, err = fetchHTMLWithBrowser(url)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer response.Close()
+	} else {
+		response, err = fetchHTMLStd(url)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer response.Close()
+	}
 
 	// duplicate response stream
 	readabilityReader := &bytes.Buffer{}
-	bodyReader := io.TeeReader(response.Body, readabilityReader)
+	bodyReader := io.TeeReader(response, readabilityReader)
 
 	// extract HTML body
 	body, err := io.ReadAll(bodyReader)
 
 	// extract article content and metadata
-	article, err := readability.FromReader(readabilityReader, base)
+	article, err := readability.FromReader(readabilityReader, baseUrl)
 	if err != nil {
 		log.Fatalf("failed to parse %s, %v\n", url, err)
 	}
@@ -149,7 +209,7 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 	if len(configs) > 1 {
 
 		// retrieve links on page
-		links, _, _, err := GetLinks(base, config.Selector, config.Limit, config.Offset, config.Reverse, false)
+		links, _, _, err := GetLinks(baseUrl, config.Selector, config.Limit, config.Offset, config.Reverse, false, config.Browser)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -168,7 +228,7 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 			// synchronous mode
 			for index, link := range links {
 				// and then use it to parse relative URLs
-				u, err := base.Parse(link.Href)
+				u, err := baseUrl.Parse(link.Href)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -201,7 +261,7 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 					defer wg.Done()
 
 					// and then use it to parse relative URLs
-					u, err := base.Parse(l.Href)
+					u, err := baseUrl.Parse(l.Href)
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -272,88 +332,6 @@ func NewChapterFromURL(url, linkName string, configs []*ScrapeConfig, index int,
 	return chapter{url, string(body), name, article.Byline(), content, subchapters, config}
 }
 
-func tableOfContent(url string, config *ScrapeConfig, subConfig *ScrapeConfig, quiet bool) ([]chapter, chapter) {
-	base, err := urllib.Parse(url)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	links, _, home, err := GetLinks(base, config.Selector, config.Limit, config.Offset, config.Reverse, config.Include)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	chapters := make([]chapter, len(links))
-	delay := config.Delay
-
-	var p progress
-	if quiet == false {
-		p = NewProgress(links, "", 0)
-	}
-
-	if delay >= 0 {
-		// synchronous mode
-
-		for index, l := range links {
-			// and then use it to parse relative URLs
-			u, err := base.Parse(l.Href)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			chapters[index] = NewChapterFromURL(u.String(), l.Text, []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
-
-			if quiet == false {
-				p.Increment(index)
-			}
-
-			// short sleep for last chapter to let the progress bar update
-			if index == len(links)-1 {
-				delay = 100
-			}
-
-			time.Sleep(time.Duration(delay) * time.Millisecond)
-		}
-
-	} else {
-		// asynchronous mode
-		var wg sync.WaitGroup
-
-		threads := config.Threads
-		if threads == -1 {
-			threads = len(links)
-		}
-		semaphore := make(chan bool, threads)
-
-		for index, l := range links {
-
-			wg.Add(1)
-			semaphore <- true
-
-			go func(index int, l link) {
-				defer wg.Done()
-
-				// and then use it to parse relative URLs
-				u, err := base.Parse(l.Href)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				chapters[index] = NewChapterFromURL(u.String(), l.Text, []*ScrapeConfig{subConfig}, 0, func(index int, name string) {})
-
-				if quiet == false {
-					p.Increment(index)
-				}
-
-				<-semaphore
-			}(index, l)
-		}
-		wg.Wait()
-	}
-
-	return chapters, home
-}
-
 func GetPath(elm *goquery.Selection) string {
 	path := []string{}
 
@@ -371,7 +349,7 @@ func GetPath(elm *goquery.Selection) string {
 	return join
 }
 
-func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, include bool) ([]link, string, chapter, error) {
+func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, include, Browser bool) ([]link, string, chapter, error) {
 	var links []link
 	var pathMax string
 
@@ -384,7 +362,7 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 		for _, item := range feed.Items {
 			u, err := url.Parse(item.Link)
 			if err != nil {
-				log.Fatal(err)
+				return []link{}, "", chapter{}, err
 			}
 
 			links = append(links, NewLink(u.String(), item.Title, item.PublishedParsed))
@@ -404,33 +382,28 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 		pathCount := map[string]int{}
 		pathMax = ""
 
-		// visit and count link classes
-		c := colly.NewCollector()
-		c.OnHTML(selector, func(e *colly.HTMLElement) {
-			text := strings.TrimSpace(e.Text)
-			path := GetPath(e.DOM)
+		linkHandler := func(s *goquery.Selection) {
+			text := strings.TrimSpace(s.Text())
+			path := GetPath(s)
 			key := path
 
-			u, err := url.Parse(e.Attr("href"))
+			hrefStr := s.AttrOr("href", "")
+			u, err := url.Parse(hrefStr)
 			if err != nil {
 				log.Fatal(err)
 			}
 			href := u.String()
 
 			if selectorSet {
-
 				// if selector is set, we use the selector specified by the user
-
 				key = selector
 				pathLinks[key] = append(pathLinks[key], NewLink(href, text, &time.Time{}))
 				pathCount[key] += 1
 				pathMax = key
-
 			} else {
-
 				// if selector is not set, we compute the selector ourselves
+				class := s.AttrOr("class", "")
 
-				class := e.Attr("class")
 				// include the element class to make sure we have the same exact path for every link in the table of content
 				key = fmt.Sprintf("%s.%s", path, class)
 
@@ -443,10 +416,31 @@ func GetLinks(url *urllib.URL, selector string, limit, offset int, reverse, incl
 						pathMax = key
 					}
 				}
-
 			}
-		})
-		c.Visit(url.String())
+		}
+
+		if Browser {
+			htmlReader, err := fetchHTMLWithBrowser(url.String())
+			if err != nil {
+				return []link{}, "", chapter{}, err
+			}
+			defer htmlReader.Close()
+
+			doc, err := goquery.NewDocumentFromReader(htmlReader)
+			if err != nil {
+				return []link{}, "", chapter{}, err
+			}
+
+			doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+				linkHandler(s)
+			})
+		} else {
+			c := colly.NewCollector()
+			c.OnHTML(selector, func(e *colly.HTMLElement) {
+				linkHandler(e.DOM)
+			})
+			c.Visit(url.String())
+		}
 
 		links = pathLinks[pathMax]
 	}

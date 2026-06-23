@@ -116,6 +116,7 @@ func TestSubChapters(t *testing.T) {
 
 	config0 := NewScrapeConfigQuiet()
 	config0.Selector = ".concrete>article>h2>a"
+
 	config1 := NewScrapeConfigQuiet()
 
 	c := NewChapterFromURL("https://12factor.net/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
@@ -229,6 +230,25 @@ func TestNotInclude(t *testing.T) {
 
 	got := c.Content()
 	want := ""
+
+	if got != want {
+		t.Errorf("got %v, wanted %v", got, want)
+	}
+
+}
+
+func TestBrowser(t *testing.T) {
+
+	config0 := NewScrapeConfigQuiet()
+	config0.Selector = "li.chapter-item a"
+	config0.Browser = true
+
+	config1 := NewScrapeConfigQuiet()
+
+	c := NewChapterFromURL("https://doc.rust-lang.org/stable/book/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
+
+	got := len(c.SubChapters())
+	want := 111
 
 	if got != want {
 		t.Errorf("got %v, wanted %v", got, want)

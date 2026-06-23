@@ -73,6 +73,7 @@ You can chain URLs.
 
 ```sh
 -a, --author string      book author
+-b, --browser            use headless browser to load pages
     --delay int          time in milliseconds to wait before downloading next chapter, use with depth/selector (default -1)
 -d, --depth int          scraping depth
 -f, --format string      file format [md, json, html, epub, mobi] (default "md")
@@ -178,6 +179,12 @@ Using this option will include all intermediary levels into the book.
 By default, it will grab all the pages asynchronously.
 
 Use those options to tweak the synchronicity of scrape requests.
+
+**`browser`**
+
+Load pages within a browser runtime. Useful for website requiring a JavaScript code execution.
+
+Requires `chrome` binary to be present in your PATH.
 
 **Automatic table of contents extraction**
 

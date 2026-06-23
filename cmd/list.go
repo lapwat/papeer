@@ -29,6 +29,7 @@ type ListOptions struct {
 	threads     int
 	include     bool
 	useLinkName bool
+	browser     bool
 }
 
 var listOpts *ListOptions
@@ -48,6 +49,7 @@ func init() {
 	listCmd.Flags().IntVarP(&listOpts.threads, "threads", "t", -1, "download concurrency, use with depth/selector")
 	listCmd.Flags().BoolVarP(&listOpts.include, "include", "i", false, "include URL as first chapter, use with depth/selector")
 	listCmd.Flags().BoolVarP(&listOpts.useLinkName, "use-link-name", "", false, "use link name for chapter title")
+	listCmd.Flags().BoolVarP(&listOpts.browser, "browser", "b", false, "use headless browser to load pages")
 
 	rootCmd.AddCommand(listCmd)
 }
@@ -83,7 +85,7 @@ var listCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		links, path, home, err := book.GetLinks(base, listOpts.Selector[0], listOpts.limit, listOpts.offset, listOpts.reverse, listOpts.include)
+		links, path, home, err := book.GetLinks(base, listOpts.Selector[0], listOpts.limit, listOpts.offset, listOpts.reverse, listOpts.include, listOpts.browser)
 		if err != nil {
 			log.Fatal(err)
 		}
