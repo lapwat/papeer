@@ -5,10 +5,10 @@ go 1.26.4
 require (
 	codeberg.org/readeck/go-readability/v2 v2.1.2
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.5.2
-	github.com/chromedp/chromedp v0.15.1
-	github.com/elazarl/goproxy v1.8.4
+	github.com/chromedp/chromedp v0.16.0
+	github.com/elazarl/goproxy v1.8.5
 	github.com/go-shiori/go-epub v1.2.1
-	github.com/jedib0t/go-pretty/v6 v6.8.2
+	github.com/jedib0t/go-pretty/v6 v6.8.3
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/mmcdole/gofeed v1.4.0
 	github.com/spf13/cobra v1.10.2
@@ -29,11 +29,11 @@ require (
 	github.com/antchfx/xpath v1.3.6 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bits-and-blooms/bitset v1.24.5 // indirect
-	github.com/chromedp/cdproto v0.0.0-20260427013145-5737772c319b // indirect
+	github.com/chromedp/cdproto v0.0.0-20260714215040-dc233986426f // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
-	github.com/go-json-experiment/json v0.0.0-20260601182631-00ed12fed2a6 // indirect
+	github.com/go-json-experiment/json v0.0.0-20260623181947-01eb4420fa68 // indirect
 	github.com/go-shiori/dom v0.0.0-20230515143342-73569d674e1c // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
@@ -60,7 +60,7 @@ require (
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
 	golang.org/x/net v0.56.0 // indirect
-	golang.org/x/sys v0.46.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
