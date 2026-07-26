@@ -24,6 +24,6 @@ jobs:
                   chmod +x kindlegen
                   mv kindlegen /usr/local/bin
             - name: Checkout
-              uses: actions/checkout@v7.0.0
+              uses: actions/checkout@v7.0.1
             - name: Test
               run: make test
