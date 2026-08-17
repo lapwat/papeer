@@ -1,17 +1,4 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    "abandonments:recommended",
-    "group:all",
-    ":automergeAll",
-    ":automergeBranch",
-    ":skipStatusChecks",
-    ":pinVersions"
-  ],
-  "dependencyDashboardOSVVulnerabilitySummary": "all",
-  "osvVulnerabilityAlerts": true,
-  "vulnerabilityAlerts": {
-    "enabled": true
-  }
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": ["lapwat/renovate:automerge-all"]
 }
