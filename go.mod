@@ -10,7 +10,7 @@ require (
 	github.com/go-shiori/go-epub v1.2.1
 	github.com/jedib0t/go-pretty/v6 v6.8.3
 	github.com/microcosm-cc/bluemonday v1.0.27
-	github.com/mmcdole/gofeed v1.4.0
+	github.com/mmcdole/gofeed v1.4.1
 	github.com/spf13/cobra v1.10.2
 )
 
@@ -59,9 +59,9 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/vincent-petithory/dataurl v1.0.0 // indirect
-	golang.org/x/net v0.56.0 // indirect
+	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.39.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
