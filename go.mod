@@ -10,7 +10,7 @@ require (
 	github.com/go-shiori/go-epub v1.2.1
 	github.com/jedib0t/go-pretty/v6 v6.8.3
 	github.com/microcosm-cc/bluemonday v1.0.27
-	github.com/mmcdole/gofeed v1.4.1
+	github.com/mmcdole/gofeed v1.4.2
 	github.com/spf13/cobra v1.10.2
 )
 
