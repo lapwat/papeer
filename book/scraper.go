@@ -120,7 +120,10 @@ func getBrowserContext() context.Context {
 			)...,
 		)
 		browserCtx, _ = chromedp.NewContext(allocCtx)
-		chromedp.Run(browserCtx)
+		_, err := chromedp.Run(browserCtx, chromedp.Title())
+		if err != nil {
+			log.Fatal(err)
+		}
 	})
 	return browserCtx
 }
@@ -148,10 +151,14 @@ func fetchHTMLWithBrowser(url string) (io.ReadCloser, error) {
 	defer cancel()
 
 	var htmlContent string
-	err := chromedp.Run(ctx,
+	err := chromedp.Do(ctx,
 		chromedp.Navigate(url),
 		chromedp.WaitReady("body"),
-		chromedp.OuterHTML("html", &htmlContent),
+		chromedp.Func(func(ctx context.Context, t *chromedp.Target) error {
+			var err error
+			htmlContent, err = chromedp.Run(ctx, chromedp.OuterHTML("html"))
+			return err
+		}),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("headless browser: %w", err)

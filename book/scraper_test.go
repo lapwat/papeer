@@ -11,7 +11,7 @@ func TestBody(t *testing.T) {
 	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
 
 	got := c.Body()
-	want := "<!doctype html><html lang=\"en\"><head><title>Example Domain</title><link rel=\"icon\" href=\"data:,\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><style>body{background:#eee;width:60vw;margin:15vh auto;font-family:system-ui,sans-serif}h1{font-size:1.5em}div{opacity:0.8}a:link,a:visited{color:#348}</style></head><body><div><h1>Example Domain</h1><p>This domain is for use in documentation examples without needing permission. Avoid use in operations.</p><p><a href=\"https://iana.org/domains/example\">Learn more</a></p></div></body></html>\n"
+	want := "<!doctype html><html lang=en><head><meta charset=utf-8><link rel=icon href=data:,><meta name=viewport content=\"width=device-width,initial-scale=1\"><title>Example Domain</title><style>html{color-scheme:light dark;background:light-dark(#eee,#222)}body{font:16px/1.6 system-ui,sans-serif;max-width:26em;margin:auto;padding:25vh 2em 2em;text-align:center}</style></head><body><p>This domain is for use in documentation examples without needing permission. This is not a service; avoid relying on it for testing and monitoring purposes.</p><script src=/s.js></script></body></html>\n"
 
 	if got != want {
 		t.Errorf("got %v, wanted %v", got, want)
@@ -68,7 +68,7 @@ func TestContent(t *testing.T) {
 	c := NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config}, 0, func(index int, name string) {})
 
 	got := c.Content()
-	want := "<div><p>This domain is for use in documentation examples without needing permission. Avoid use in operations.</p><p><a href=\"https://iana.org/domains/example\">Learn more</a></p></div>"
+	want := "<p>This domain is for use in documentation examples without needing permission. This is not a service; avoid relying on it for testing and monitoring purposes.</p>\n"
 
 	if got != want {
 		t.Errorf("got %v, wanted %v", got, want)
@@ -84,7 +84,7 @@ func TestDelay(t *testing.T) {
 	config1 := NewScrapeConfigQuiet()
 
 	start := time.Now()
-	NewChapterFromURL("https://example.com/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
+	NewChapterFromURL("https://12factor.net/", "", []*ScrapeConfig{config0, config1}, 0, func(index int, name string) {})
 	elapsed := time.Since(start)
 
 	got := elapsed
