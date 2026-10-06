@@ -6,7 +6,7 @@ require (
 	codeberg.org/readeck/go-readability/v2 v2.1.3
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.5.2
 	github.com/PuerkitoBio/goquery v1.13.0
-	github.com/chromedp/chromedp v0.19.1
+	github.com/chromedp/chromedp v0.20.1
 	github.com/elazarl/goproxy v1.9.2
 	github.com/go-shiori/go-epub v1.2.1
 	github.com/gocolly/colly/v2 v2.3.0
@@ -25,7 +25,7 @@ require (
 	github.com/antchfx/xpath v1.3.6 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bits-and-blooms/bitset v1.24.5 // indirect
-	github.com/chromedp/cdproto v0.157.4 // indirect
+	github.com/chromedp/cdproto v0.157.8 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
