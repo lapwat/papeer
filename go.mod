@@ -6,7 +6,7 @@ require (
 	codeberg.org/readeck/go-readability/v2 v2.1.3
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.5.2
 	github.com/PuerkitoBio/goquery v1.13.0
-	github.com/chromedp/chromedp v0.20.1
+	github.com/chromedp/chromedp v0.21.0
 	github.com/elazarl/goproxy v1.9.2
 	github.com/go-shiori/go-epub v1.2.1
 	github.com/gocolly/colly/v2 v2.3.0
